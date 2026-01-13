@@ -1,0 +1,23 @@
+/* Transparent Navbar */
+.navbar-transparent {
+  background-color: white;
+}
+
+.navbar-solid {
+  background-color: white;
+}
+
+/* Mobile Menu Transparent */
+.mobile-menu-transparent {
+  background-color: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.border-white-20 {
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.hover-bg-white-10:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
