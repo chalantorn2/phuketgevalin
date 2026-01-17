@@ -1,53 +1,56 @@
-import Container from '../components/ui/Container';
-import Card from '../components/ui/Card';
-import Button from '../components/ui/Button';
+import Container from "../components/ui/Container";
+import Card from "../components/ui/Card";
+import Button from "../components/ui/Button";
+import { FaBullseye, FaStar, FaMoneyBillWave, FaHandshake } from "react-icons/fa";
 
 export default function About() {
   const features = [
     {
-      icon: '🎯',
-      title: 'ประสบการณ์ยาวนาน',
-      description: 'มากกว่า 10 ปีในธุรกิจการท่องเที่ยว ด้วยทีมงานมืออาชีพที่มีประสบการณ์',
+      icon: FaBullseye,
+      title: "ประสบการณ์ยาวนาน",
+      description:
+        "มากกว่า 10 ปีในธุรกิจการท่องเที่ยว ด้วยทีมงานมืออาชีพที่มีประสบการณ์",
     },
     {
-      icon: '⭐',
-      title: 'บริการคุณภาพ',
-      description: 'ให้บริการด้วยมาตรฐานสูง เน้นความปลอดภัยและความพึงพอใจของลูกค้า',
+      icon: FaStar,
+      title: "บริการคุณภาพ",
+      description:
+        "ให้บริการด้วยมาตรฐานสูง เน้นความปลอดภัยและความพึงพอใจของลูกค้า",
     },
     {
-      icon: '💰',
-      title: 'ราคายุติธรรม',
-      description: 'ราคาโปร่งใส คุ้มค่า ไม่มีค่าใช้จ่ายแอบแฝง',
+      icon: FaMoneyBillWave,
+      title: "ราคายุติธรรม",
+      description: "ราคาโปร่งใส คุ้มค่า ไม่มีค่าใช้จ่ายแอบแฝง",
     },
     {
-      icon: '🤝',
-      title: 'ดูแลตลอด 24/7',
-      description: 'ทีมงานพร้อมให้คำปรึกษาและดูแลตลอดการเดินทาง',
+      icon: FaHandshake,
+      title: "ดูแลตลอด 24/7",
+      description: "ทีมงานพร้อมให้คำปรึกษาและดูแลตลอดการเดินทาง",
     },
   ];
 
   const stats = [
-    { number: '10+', label: 'ปีประสบการณ์' },
-    { number: '5000+', label: 'ลูกค้าพึงพอใจ' },
-    { number: '50+', label: 'โปรแกรมทัวร์' },
-    { number: '30+', label: 'พันธมิตรโรงแรม' },
+    { number: "10+", label: "ปีประสบการณ์" },
+    { number: "5000+", label: "ลูกค้าพึงพอใจ" },
+    { number: "50+", label: "โปรแกรมทัวร์" },
+    { number: "30+", label: "พันธมิตรโรงแรม" },
   ];
 
   const team = [
     {
-      name: 'คุณสมชาย',
-      role: 'ผู้จัดการทั่วไป',
-      description: 'ประสบการณ์ 15 ปีด้านการท่องเที่ยว',
+      name: "คุณสมชาย",
+      role: "ผู้จัดการทั่วไป",
+      description: "ประสบการณ์ 15 ปีด้านการท่องเที่ยว",
     },
     {
-      name: 'คุณสมหญิง',
-      role: 'หัวหน้าทีมมัคคุเทศก์',
-      description: 'มัคคุเทศก์ใบอนุญาตระดับชาติ',
+      name: "คุณสมหญิง",
+      role: "หัวหน้าทีมมัคคุเทศก์",
+      description: "มัคคุเทศก์ใบอนุญาตระดับชาติ",
     },
     {
-      name: 'คุณสมศักดิ์',
-      role: 'ผู้จัดการฝ่ายปฏิบัติการ',
-      description: 'ดูแลคุณภาพและความปลอดภัย',
+      name: "คุณสมศักดิ์",
+      role: "ผู้จัดการฝ่ายปฏิบัติการ",
+      description: "ดูแลคุณภาพและความปลอดภัย",
     },
   ];
 
@@ -63,7 +66,7 @@ export default function About() {
               เกี่ยวกับเรา
             </h1>
             <p className="text-lg md:text-xl text-primary-100 leading-relaxed">
-              ผู้ให้บริการด้านการท่องเที่ยวครบวงจรที่ภูเก็ต
+              ผู้ให้บริการด้านการท่องเที่ยวครบวงจรที่ภูเก็ต <br />
               พร้อมมอบประสบการณ์ที่น่าประทับใจในทุกการเดินทาง
             </p>
           </div>
@@ -71,7 +74,7 @@ export default function About() {
       </section>
 
       {/* Company Info Section */}
-      <section className="py-16 md:py-24">
+      <section className="py-6 md:py-16">
         <Container>
           <div className="grid md:grid-cols-2 gap-12 items-center mb-20">
             <div>
@@ -81,8 +84,8 @@ export default function About() {
               <div className="space-y-4 text-lg text-neutral-700 leading-relaxed">
                 <p>
                   เราเป็นบริษัทที่ให้บริการด้านการท่องเที่ยวครบวงจร
-                  ตั้งอยู่ใจกลางเมืองภูเก็ต
-                  พร้อมมอบบริการทัวร์ รถรับ-ส่ง และที่พักโรงแรมคุณภาพ
+                  ตั้งอยู่ใจกลางเมืองภูเก็ต พร้อมมอบบริการทัวร์ รถรับ-ส่ง
+                  และที่พักโรงแรมคุณภาพ
                 </p>
                 <p>
                   ด้วยประสบการณ์กว่า 10 ปีในธุรกิจการท่องเที่ยว
@@ -113,57 +116,82 @@ export default function About() {
             ))}
           </div>
 
-          {/* Features */}
+          {/* Certifications */}
           <div className="mb-20">
             <h2 className="text-3xl md:text-4xl font-bold text-neutral-900 text-center mb-12">
-              ทำไมต้องเลือกเรา
+              เอกสารรับรองและใบอนุญาต
             </h2>
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {features.map((feature, index) => (
-                <Card key={index} className="p-6 text-center">
-                  <div className="text-5xl mb-4">{feature.icon}</div>
-                  <h3 className="text-xl font-semibold text-neutral-900 mb-2">
-                    {feature.title}
+            <p className="text-center text-neutral-600 mb-12 max-w-2xl mx-auto">
+              เราเป็นบริษัทที่ได้รับการจดทะเบียนถูกต้องตามกฎหมาย <br />
+              และได้รับใบอนุญาตประกอบธุรกิจนำเที่ยวอย่างเป็นทางการ
+            </p>
+            <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+              <Card className="overflow-hidden">
+                <div className="aspect-[3/4] bg-neutral-100 overflow-hidden">
+                  <img
+                    src="/document/brc.jpg"
+                    alt="ใบสำคัญแสดงการจดทะเบียนห้างหุ้นส่วนบริษัท"
+                    className="w-full h-full object-contain hover:scale-105 transition-transform duration-300"
+                  />
+                </div>
+                <div className="p-6">
+                  <h3 className="text-lg font-semibold text-neutral-900 mb-2">
+                    ใบสำคัญแสดงการจดทะเบียน
                   </h3>
-                  <p className="text-neutral-600 leading-relaxed">
-                    {feature.description}
+                  <p className="text-neutral-600 text-sm">
+                    กรมพัฒนาธุรกิจการค้า
+                    <br />
+                    เลขทะเบียน 0835562013277
                   </p>
-                </Card>
-              ))}
-            </div>
-          </div>
+                </div>
+              </Card>
 
-          {/* Team */}
-          <div className="mb-20">
-            <h2 className="text-3xl md:text-4xl font-bold text-neutral-900 text-center mb-12">
-              ทีมงานของเรา
-            </h2>
-            <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-              {team.map((member, index) => (
-                <Card key={index} className="text-center">
-                  <div className="aspect-square bg-neutral-200 flex items-center justify-center">
-                    <span className="text-neutral-500">รูปภาพ</span>
-                  </div>
-                  <div className="p-6">
-                    <h3 className="text-xl font-semibold text-neutral-900 mb-1">
-                      {member.name}
-                    </h3>
-                    <div className="text-primary-600 font-medium mb-3">
-                      {member.role}
-                    </div>
-                    <p className="text-neutral-600 text-sm">
-                      {member.description}
-                    </p>
-                  </div>
-                </Card>
-              ))}
+              <Card className="overflow-hidden">
+                <div className="aspect-[3/4] bg-neutral-100 overflow-hidden">
+                  <img
+                    src="/document/dbd.jpg"
+                    alt="หนังสือรับรอง กรมพัฒนาธุรกิจการค้า"
+                    className="w-full h-full object-contain hover:scale-105 transition-transform duration-300"
+                  />
+                </div>
+                <div className="p-6">
+                  <h3 className="text-lg font-semibold text-neutral-900 mb-2">
+                    หนังสือรับรอง
+                  </h3>
+                  <p className="text-neutral-600 text-sm">
+                    กรมพัฒนาธุรกิจการค้า
+                    <br />
+                    ทะเบียนพาณิชย์ กค 016145
+                  </p>
+                </div>
+              </Card>
+
+              <Card className="overflow-hidden">
+                <div className="aspect-[3/4] bg-neutral-100 overflow-hidden">
+                  <img
+                    src="/document/tat_license.jpg"
+                    alt="ใบอนุญาตประกอบธุรกิจนำเที่ยว"
+                    className="w-full h-full object-contain hover:scale-105 transition-transform duration-300"
+                  />
+                </div>
+                <div className="p-6">
+                  <h3 className="text-lg font-semibold text-neutral-900 mb-2">
+                    ใบอนุญาตประกอบธุรกิจนำเที่ยว
+                  </h3>
+                  <p className="text-neutral-600 text-sm">
+                    กรมการท่องเที่ยว
+                    <br />
+                    เลขที่ 34/03473
+                  </p>
+                </div>
+              </Card>
             </div>
           </div>
         </Container>
       </section>
 
       {/* Contact Section */}
-      <section className="py-16 md:py-24 bg-neutral-100">
+      <section className="py-16 md:py-16 bg-neutral-100">
         <Container>
           <div className="max-w-5xl mx-auto">
             <h2 className="text-3xl md:text-4xl font-bold text-neutral-900 text-center mb-12">
@@ -191,8 +219,9 @@ export default function About() {
                         ที่อยู่
                       </div>
                       <p className="text-neutral-600 leading-relaxed">
-                        123 ถนนภูเก็ต ตำบลตลาดใหญ่<br />
-                        อำเภอเมือง จังหวัดภูเก็ต 83000
+                        20/15 หมู่ที่ 5 ซอยนากก ถนนเจ้าฟ้านอก
+                        <br />
+                        ต.ฉลอง อ.เมืองภูเก็ต จ.ภูเก็ต 83130
                       </p>
                     </div>
                   </div>
@@ -216,7 +245,7 @@ export default function About() {
                         href="tel:+66123456789"
                         className="text-primary-600 hover:text-primary-700"
                       >
-                        012-345-6789
+                        099-257-0639
                       </a>
                     </div>
                   </div>
@@ -264,7 +293,7 @@ export default function About() {
                         href="mailto:info@phuketgevalin.com"
                         className="text-primary-600 hover:text-primary-700"
                       >
-                        info@phuketgevalin.com
+                        gevalin2019@gmail.com
                       </a>
                     </div>
                   </div>
