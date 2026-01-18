@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { LanguageProvider } from './context/LanguageContext';
 import MainLayout from './components/layout/MainLayout';
 import Home from './pages/Home';
 import About from './pages/About';
@@ -29,8 +30,10 @@ export default function App() {
   };
 
   return (
-    <MainLayout currentPage={currentPage} setCurrentPage={setCurrentPage}>
-      {renderPage()}
-    </MainLayout>
+    <LanguageProvider>
+      <MainLayout currentPage={currentPage} setCurrentPage={setCurrentPage}>
+        {renderPage()}
+      </MainLayout>
+    </LanguageProvider>
   );
 }

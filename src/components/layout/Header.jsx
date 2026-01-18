@@ -1,13 +1,14 @@
 import { useState, useEffect } from "react";
 import Container from "../ui/Container";
 import Button from "../ui/Button";
+import { useLanguage } from "../../context/LanguageContext";
 import "./Header.css";
 
 export default function Header({ setCurrentPage }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [openDropdown, setOpenDropdown] = useState(null);
-  const [language, setLanguage] = useState("TH");
+  const { language, toggleLanguage, t } = useLanguage();
 
   const FlagIcon = ({ lang }) => {
     if (lang === "TH") {
@@ -42,18 +43,18 @@ export default function Header({ setCurrentPage }) {
   }, []);
 
   const navigation = [
-    { name: "หน้าแรก", page: "home" },
+    { name: t('nav.home'), page: "home" },
     {
-      name: "บริการทัวร์",
+      name: t('nav.tourServices'),
       isDropdown: true,
       items: [
-        { name: "วันเดย์ทริป", page: "one-day-trip" },
-        { name: "แพ็กเกจทัวร์", page: "package-tour" },
+        { name: t('nav.oneDayTrip'), page: "one-day-trip" },
+        { name: t('nav.packageTour'), page: "package-tour" },
       ],
     },
-    { name: "บริการรถรับ-ส่ง", page: "transfer" },
-    { name: "ที่พักโรงแรม", page: "hotel" },
-    { name: "เกี่ยวกับเรา", page: "about" },
+    { name: t('nav.transfer'), page: "transfer" },
+    { name: t('nav.hotel'), page: "hotel" },
+    { name: t('nav.about'), page: "about" },
   ];
 
   const handleNavClick = (page) => {
@@ -156,7 +157,7 @@ export default function Header({ setCurrentPage }) {
           {/* Language Switcher & Contact Button */}
           <div className="hidden md:flex items-center gap-3">
             <button
-              onClick={() => setLanguage(language === "TH" ? "EN" : "TH")}
+              onClick={toggleLanguage}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full font-medium text-sm transition-all duration-300 cursor-pointer shadow-sm hover:shadow-md ${
                 isScrolled
                   ? 'bg-white hover:bg-neutral-50 border border-neutral-200 hover:border-primary-300 text-neutral-700'
@@ -171,14 +172,14 @@ export default function Header({ setCurrentPage }) {
               variant="primary"
               className="shadow-md hover:shadow-lg transition-shadow"
             >
-              ติดต่อเรา
+              {t('nav.contactUs')}
             </Button>
           </div>
 
           {/* Mobile Menu Button & Language Switcher */}
           <div className="md:hidden flex items-center gap-3">
             <button
-              onClick={() => setLanguage(language === "TH" ? "EN" : "TH")}
+              onClick={toggleLanguage}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full font-medium text-sm transition-all duration-300 cursor-pointer shadow-sm ${
                 isScrolled
                   ? 'bg-white hover:bg-neutral-50 border border-neutral-200 text-neutral-700'
@@ -263,7 +264,7 @@ export default function Header({ setCurrentPage }) {
               className="w-full shadow-md"
               onClick={() => setIsMenuOpen(false)}
             >
-              ติดต่อเรา
+              {t('nav.contactUs')}
             </Button>
           </div>
         </div>

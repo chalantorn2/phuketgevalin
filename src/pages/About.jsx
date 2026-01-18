@@ -1,73 +1,55 @@
 import Container from "../components/ui/Container";
 import Card from "../components/ui/Card";
 import Button from "../components/ui/Button";
+import { useLanguage } from "../context/LanguageContext";
 import { FaBullseye, FaStar, FaMoneyBillWave, FaHandshake } from "react-icons/fa";
 
 export default function About() {
+  const { t } = useLanguage();
+
   const features = [
     {
       icon: FaBullseye,
-      title: "ประสบการณ์ยาวนาน",
-      description:
-        "มากกว่า 10 ปีในธุรกิจการท่องเที่ยว ด้วยทีมงานมืออาชีพที่มีประสบการณ์",
+      title: t("about.features.experience.title"),
+      description: t("about.features.experience.description"),
     },
     {
       icon: FaStar,
-      title: "บริการคุณภาพ",
-      description:
-        "ให้บริการด้วยมาตรฐานสูง เน้นความปลอดภัยและความพึงพอใจของลูกค้า",
+      title: t("about.features.quality.title"),
+      description: t("about.features.quality.description"),
     },
     {
       icon: FaMoneyBillWave,
-      title: "ราคายุติธรรม",
-      description: "ราคาโปร่งใส คุ้มค่า ไม่มีค่าใช้จ่ายแอบแฝง",
+      title: t("about.features.price.title"),
+      description: t("about.features.price.description"),
     },
     {
       icon: FaHandshake,
-      title: "ดูแลตลอด 24/7",
-      description: "ทีมงานพร้อมให้คำปรึกษาและดูแลตลอดการเดินทาง",
+      title: t("about.features.support.title"),
+      description: t("about.features.support.description"),
     },
   ];
 
   const stats = [
-    { number: "10+", label: "ปีประสบการณ์" },
-    { number: "5000+", label: "ลูกค้าพึงพอใจ" },
-    { number: "50+", label: "โปรแกรมทัวร์" },
-    { number: "30+", label: "พันธมิตรโรงแรม" },
-  ];
-
-  const team = [
-    {
-      name: "คุณสมชาย",
-      role: "ผู้จัดการทั่วไป",
-      description: "ประสบการณ์ 15 ปีด้านการท่องเที่ยว",
-    },
-    {
-      name: "คุณสมหญิง",
-      role: "หัวหน้าทีมมัคคุเทศก์",
-      description: "มัคคุเทศก์ใบอนุญาตระดับชาติ",
-    },
-    {
-      name: "คุณสมศักดิ์",
-      role: "ผู้จัดการฝ่ายปฏิบัติการ",
-      description: "ดูแลคุณภาพและความปลอดภัย",
-    },
+    { number: "10+", label: t("about.stats.years") },
+    { number: "5000+", label: t("about.stats.customers") },
+    { number: "50+", label: t("about.stats.tours") },
+    { number: "30+", label: t("about.stats.partners") },
   ];
 
   return (
     <div>
       {/* Hero Section */}
-      <section className="relative bg-gradient-primary text-white hero-shine overflow-hidden">
-        <div className="absolute inset-0 overlay-dark"></div>
-        <div className="absolute inset-0 hero-pattern"></div>
+      <section className="relative bg-gradient-primary text-white overflow-hidden">
+        <div className="absolute inset-0 bg-black/30"></div>
         <Container className="relative py-20 md:py-28">
           <div className="max-w-3xl mx-auto text-center">
             <h1 className="text-4xl md:text-5xl font-bold mb-6">
-              เกี่ยวกับเรา
+              {t("about.hero.title")}
             </h1>
             <p className="text-lg md:text-xl text-primary-100 leading-relaxed">
-              ผู้ให้บริการด้านการท่องเที่ยวครบวงจรที่ภูเก็ต <br />
-              พร้อมมอบประสบการณ์ที่น่าประทับใจในทุกการเดินทาง
+              {t("about.hero.subtitle")} <br />
+              {t("about.hero.description")}
             </p>
           </div>
         </Container>
@@ -79,28 +61,16 @@ export default function About() {
           <div className="grid md:grid-cols-2 gap-12 items-center mb-20">
             <div>
               <h2 className="text-3xl md:text-4xl font-bold text-neutral-900 mb-6">
-                Phuket Gevalin
+                {t("about.company.title")}
               </h2>
               <div className="space-y-4 text-lg text-neutral-700 leading-relaxed">
-                <p>
-                  เราเป็นบริษัทที่ให้บริการด้านการท่องเที่ยวครบวงจร
-                  ตั้งอยู่ใจกลางเมืองภูเก็ต พร้อมมอบบริการทัวร์ รถรับ-ส่ง
-                  และที่พักโรงแรมคุณภาพ
-                </p>
-                <p>
-                  ด้วยประสบการณ์กว่า 10 ปีในธุรกิจการท่องเที่ยว
-                  เราเข้าใจความต้องการของนักท่องเที่ยวทั้งชาวไทยและต่างชาติ
-                  และมุ่งมั่นมอบประสบการณ์การท่องเที่ยวที่ปลอดภัย สะดวกสบาย
-                  และน่าประทับใจ
-                </p>
-                <p>
-                  ทีมงานของเรามีความเชี่ยวชาญในพื้นที่ภูเก็ตและจังหวัดใกล้เคียง
-                  พร้อมให้คำแนะนำและดูแลคุณตลอดการเดินทาง
-                </p>
+                <p>{t("about.company.description1")}</p>
+                <p>{t("about.company.description2")}</p>
+                <p>{t("about.company.description3")}</p>
               </div>
             </div>
             <div className="bg-neutral-200 aspect-[4/3] rounded-2xl flex items-center justify-center">
-              <span className="text-neutral-500">รูปภาพบริษัท</span>
+              <span className="text-neutral-500">{t("about.company.imagePlaceholder")}</span>
             </div>
           </div>
 
@@ -119,29 +89,28 @@ export default function About() {
           {/* Certifications */}
           <div className="mb-20">
             <h2 className="text-3xl md:text-4xl font-bold text-neutral-900 text-center mb-12">
-              เอกสารรับรองและใบอนุญาต
+              {t("about.certifications.title")}
             </h2>
             <p className="text-center text-neutral-600 mb-12 max-w-2xl mx-auto">
-              เราเป็นบริษัทที่ได้รับการจดทะเบียนถูกต้องตามกฎหมาย <br />
-              และได้รับใบอนุญาตประกอบธุรกิจนำเที่ยวอย่างเป็นทางการ
+              {t("about.certifications.description")}
             </p>
             <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
               <Card className="overflow-hidden">
                 <div className="aspect-[3/4] bg-neutral-100 overflow-hidden">
                   <img
                     src="/document/brc.jpg"
-                    alt="ใบสำคัญแสดงการจดทะเบียนห้างหุ้นส่วนบริษัท"
+                    alt={t("about.certifications.brc.title")}
                     className="w-full h-full object-contain hover:scale-105 transition-transform duration-300"
                   />
                 </div>
                 <div className="p-6">
                   <h3 className="text-lg font-semibold text-neutral-900 mb-2">
-                    ใบสำคัญแสดงการจดทะเบียน
+                    {t("about.certifications.brc.title")}
                   </h3>
                   <p className="text-neutral-600 text-sm">
-                    กรมพัฒนาธุรกิจการค้า
+                    {t("about.certifications.brc.department")}
                     <br />
-                    เลขทะเบียน 0835562013277
+                    {t("about.certifications.brc.number")}
                   </p>
                 </div>
               </Card>
@@ -150,18 +119,18 @@ export default function About() {
                 <div className="aspect-[3/4] bg-neutral-100 overflow-hidden">
                   <img
                     src="/document/dbd.jpg"
-                    alt="หนังสือรับรอง กรมพัฒนาธุรกิจการค้า"
+                    alt={t("about.certifications.dbd.title")}
                     className="w-full h-full object-contain hover:scale-105 transition-transform duration-300"
                   />
                 </div>
                 <div className="p-6">
                   <h3 className="text-lg font-semibold text-neutral-900 mb-2">
-                    หนังสือรับรอง
+                    {t("about.certifications.dbd.title")}
                   </h3>
                   <p className="text-neutral-600 text-sm">
-                    กรมพัฒนาธุรกิจการค้า
+                    {t("about.certifications.dbd.department")}
                     <br />
-                    ทะเบียนพาณิชย์ กค 016145
+                    {t("about.certifications.dbd.number")}
                   </p>
                 </div>
               </Card>
@@ -170,18 +139,18 @@ export default function About() {
                 <div className="aspect-[3/4] bg-neutral-100 overflow-hidden">
                   <img
                     src="/document/tat_license.jpg"
-                    alt="ใบอนุญาตประกอบธุรกิจนำเที่ยว"
+                    alt={t("about.certifications.tat.title")}
                     className="w-full h-full object-contain hover:scale-105 transition-transform duration-300"
                   />
                 </div>
                 <div className="p-6">
                   <h3 className="text-lg font-semibold text-neutral-900 mb-2">
-                    ใบอนุญาตประกอบธุรกิจนำเที่ยว
+                    {t("about.certifications.tat.title")}
                   </h3>
                   <p className="text-neutral-600 text-sm">
-                    กรมการท่องเที่ยว
+                    {t("about.certifications.tat.department")}
                     <br />
-                    เลขที่ 34/03473
+                    {t("about.certifications.tat.number")}
                   </p>
                 </div>
               </Card>
@@ -195,13 +164,13 @@ export default function About() {
         <Container>
           <div className="max-w-5xl mx-auto">
             <h2 className="text-3xl md:text-4xl font-bold text-neutral-900 text-center mb-12">
-              ติดต่อเรา
+              {t("about.contact.title")}
             </h2>
             <div className="grid md:grid-cols-2 gap-8">
               {/* Contact Info */}
               <Card className="p-8">
                 <h3 className="text-2xl font-semibold text-neutral-900 mb-6">
-                  ข้อมูลติดต่อ
+                  {t("about.contact.infoTitle")}
                 </h3>
                 <div className="space-y-6">
                   <div className="flex items-start gap-4">
@@ -216,12 +185,10 @@ export default function About() {
                     </div>
                     <div>
                       <div className="font-semibold text-neutral-900 mb-1">
-                        ที่อยู่
+                        {t("about.contact.address")}
                       </div>
                       <p className="text-neutral-600 leading-relaxed">
-                        20/15 หมู่ที่ 5 ซอยนากก ถนนเจ้าฟ้านอก
-                        <br />
-                        ต.ฉลอง อ.เมืองภูเก็ต จ.ภูเก็ต 83130
+                        {t("about.contact.addressValue")}
                       </p>
                     </div>
                   </div>
@@ -239,7 +206,7 @@ export default function About() {
                     </div>
                     <div>
                       <div className="font-semibold text-neutral-900 mb-1">
-                        โทรศัพท์
+                        {t("about.contact.phone")}
                       </div>
                       <a
                         href="tel:+66123456789"
@@ -287,7 +254,7 @@ export default function About() {
                     </div>
                     <div>
                       <div className="font-semibold text-neutral-900 mb-1">
-                        อีเมล
+                        {t("about.contact.email")}
                       </div>
                       <a
                         href="mailto:info@phuketgevalin.com"
@@ -301,16 +268,16 @@ export default function About() {
 
                 <div className="mt-8 pt-8 border-t border-neutral-200">
                   <h4 className="font-semibold text-neutral-900 mb-4">
-                    เวลาทำการ
+                    {t("about.contact.businessHours")}
                   </h4>
                   <div className="space-y-2 text-neutral-600">
                     <div className="flex justify-between">
-                      <span>จันทร์ - ศุกร์</span>
-                      <span className="font-medium">08:00 - 20:00 น.</span>
+                      <span>{t("about.contact.weekdays")}</span>
+                      <span className="font-medium">08:00 - 20:00</span>
                     </div>
                     <div className="flex justify-between">
-                      <span>เสาร์ - อาทิตย์</span>
-                      <span className="font-medium">09:00 - 18:00 น.</span>
+                      <span>{t("about.contact.weekends")}</span>
+                      <span className="font-medium">09:00 - 18:00</span>
                     </div>
                   </div>
                 </div>
@@ -323,7 +290,7 @@ export default function About() {
                 </div>
                 <div className="p-6">
                   <Button variant="outline" className="w-full">
-                    เปิดใน Google Maps
+                    {t("about.contact.openMaps")}
                   </Button>
                 </div>
               </Card>
@@ -337,21 +304,21 @@ export default function About() {
         <Container>
           <div className="max-w-3xl mx-auto text-center">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              พร้อมที่จะเริ่มต้นการเดินทางกับเรา?
+              {t("about.cta.title")}
             </h2>
             <p className="text-lg mb-8 text-primary-100">
-              ติดต่อเราวันนี้เพื่อรับคำปรึกษาและวางแผนการท่องเที่ยวที่สมบูรณ์แบบ
+              {t("about.cta.description")}
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button size="lg" variant="accent">
-                ติดต่อเราเลย
+                {t("about.cta.contactBtn")}
               </Button>
               <Button
                 size="lg"
                 variant="outline"
                 className="border-white text-white"
               >
-                ดูแพ็กเกจทัวร์
+                {t("about.cta.viewPackages")}
               </Button>
             </div>
           </div>

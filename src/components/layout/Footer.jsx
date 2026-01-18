@@ -1,18 +1,21 @@
 import Container from '../ui/Container';
+import { useLanguage } from '../../context/LanguageContext';
 
 export default function Footer() {
+  const { t } = useLanguage();
+
   const services = [
-    { name: 'วันเดย์ทริป', href: '/one-day-trip' },
-    { name: 'แพ็กเกจทัวร์', href: '/package-tour' },
-    { name: 'บริการรถรับ-ส่ง', href: '/transfer' },
-    { name: 'ที่พักโรงแรม', href: '/hotel' },
+    { name: t('nav.oneDayTrip'), href: '/one-day-trip' },
+    { name: t('nav.packageTour'), href: '/package-tour' },
+    { name: t('nav.transfer'), href: '/transfer' },
+    { name: t('nav.hotel'), href: '/hotel' },
   ];
 
   const company = [
-    { name: 'เกี่ยวกับเรา', href: '/about' },
-    { name: 'ติดต่อเรา', href: '/contact' },
-    { name: 'นโยบายความเป็นส่วนตัว', href: '/privacy' },
-    { name: 'เงื่อนไขการใช้งาน', href: '/terms' },
+    { name: t('footer.aboutUs'), href: '/about' },
+    { name: t('footer.contactUs'), href: '/contact' },
+    { name: t('footer.privacy'), href: '/privacy' },
+    { name: t('footer.terms'), href: '/terms' },
   ];
 
   return (
@@ -25,8 +28,7 @@ export default function Footer() {
               Phuket Gevalin
             </h3>
             <p className="text-neutral-400 mb-4 leading-relaxed">
-              ผู้ให้บริการด้านการท่องเที่ยวครบวงจร บริการทัวร์ รถรับ-ส่ง และที่พักโรงแรมคุณภาพ
-              พร้อมมอบประสบการณ์การท่องเที่ยวที่น่าประทับใจ
+              {t('footer.description')}
             </p>
             <div className="flex space-x-4">
               <a
@@ -63,7 +65,7 @@ export default function Footer() {
 
           {/* Services */}
           <div>
-            <h4 className="text-white font-semibold mb-4">บริการของเรา</h4>
+            <h4 className="text-white font-semibold mb-4">{t('footer.ourServices')}</h4>
             <ul className="space-y-2">
               {services.map((item) => (
                 <li key={item.name}>
@@ -80,7 +82,7 @@ export default function Footer() {
 
           {/* Company */}
           <div>
-            <h4 className="text-white font-semibold mb-4">บริษัท</h4>
+            <h4 className="text-white font-semibold mb-4">{t('footer.company')}</h4>
             <ul className="space-y-2">
               {company.map((item) => (
                 <li key={item.name}>
@@ -98,7 +100,7 @@ export default function Footer() {
 
         {/* Bottom Bar */}
         <div className="border-t border-neutral-800 py-6 text-center text-neutral-500 text-sm">
-          <p>&copy; {new Date().getFullYear()} Phuket Gevalin. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} Phuket Gevalin. {t('footer.copyright')}.</p>
         </div>
       </Container>
     </footer>
