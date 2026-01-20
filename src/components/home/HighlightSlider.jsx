@@ -2,40 +2,99 @@ import { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, ArrowRight, MapPin, Sparkles } from 'lucide-react';
 import Button from '../ui/Button';
 import { useLanguage } from '../../context/LanguageContext';
+import { promotionsAPI } from '../../services/api';
 
 export default function HighlightSlider() {
   const [current, setCurrent] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [promotions, setPromotions] = useState([]);
+  const [loading, setLoading] = useState(true);
   const { t, language } = useLanguage();
 
-  // Slide data with prices (prices stay the same across languages)
-  const slideImages = [
-    "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?q=80&w=2000&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1537996194471-e657df975ab4?q=80&w=2000&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1504214208698-ea1916a2195a?q=80&w=2000&auto=format&fit=crop"
+  // Fallback data (used when API is not available)
+  const fallbackData = [
+    {
+      id: 1,
+      image: "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?q=80&w=2000&auto=format&fit=crop",
+      subtitle_th: "โปรโมชั่นพิเศษ",
+      subtitle_en: "Special Offer",
+      title_th: "ทัวร์ 4 เกาะ พร้อมดำน้ำตื้น",
+      title_en: "4 Islands Tour with Snorkeling",
+      location_th: "กระบี่, ประเทศไทย",
+      location_en: "Krabi, Thailand",
+      price: 3990,
+      description_th: "สัมผัสความงดงามของหมู่เกาะทะเลกระบี่ พร้อมดำน้ำชมปะการังและปลาสีสันสดใส",
+      description_en: "Experience the beauty of Krabi islands with snorkeling among colorful coral reefs and tropical fish"
+    },
+    {
+      id: 2,
+      image: "https://images.unsplash.com/photo-1537996194471-e657df975ab4?q=80&w=2000&auto=format&fit=crop",
+      subtitle_th: "ขายดี",
+      subtitle_en: "Best Seller",
+      title_th: "เกาะพีพี & เกาะไม้ไผ่",
+      title_en: "Phi Phi & Bamboo Island",
+      location_th: "ภูเก็ต, ประเทศไทย",
+      location_en: "Phuket, Thailand",
+      price: 5500,
+      description_th: "ล่องเรือเร็วสู่เกาะพีพี ชมอ่าวมาหยา และเกาะไม้ไผ่ น้ำใสราวกระจก",
+      description_en: "Speedboat trip to Phi Phi Islands, Maya Bay and crystal clear waters of Bamboo Island"
+    },
+    {
+      id: 3,
+      image: "https://images.unsplash.com/photo-1504214208698-ea1916a2195a?q=80&w=2000&auto=format&fit=crop",
+      subtitle_th: "แพ็กเกจสุดคุ้ม",
+      subtitle_en: "Value Package",
+      title_th: "แพ็กเกจทัวร์ 3 วัน 2 คืน",
+      title_en: "3 Days 2 Nights Package",
+      location_th: "ภูเก็ต, ประเทศไทย",
+      location_en: "Phuket, Thailand",
+      price: 25900,
+      description_th: "รวมที่พัก อาหาร และทัวร์ครบวงจร พร้อมรถรับส่งสนามบิน",
+      description_en: "All-inclusive package with accommodation, meals, tours and airport transfer"
+    }
   ];
-  const slidePrices = ["3,990", "5,500", "25,900"];
 
-  // Get translated slides
-  const translatedSlides = t('highlight.slides');
-  const slides = slideImages.map((image, index) => ({
-    id: index + 1,
-    image,
-    subtitle: translatedSlides[index]?.subtitle || '',
-    title: translatedSlides[index]?.title || '',
-    location: translatedSlides[index]?.location || '',
-    price: slidePrices[index],
-    desc: translatedSlides[index]?.desc || ''
+  // Fetch promotions from API
+  useEffect(() => {
+    const fetchPromotions = async () => {
+      try {
+        const response = await promotionsAPI.getAll();
+        if (response.success && response.data && response.data.length > 0) {
+          setPromotions(response.data);
+        } else {
+          setPromotions(fallbackData);
+        }
+      } catch (error) {
+        console.error('Failed to fetch promotions:', error);
+        setPromotions(fallbackData);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPromotions();
+  }, []);
+
+  // Get localized content
+  const slides = promotions.map((promo) => ({
+    id: promo.id,
+    image: promo.image,
+    subtitle: language === 'th' ? promo.subtitle_th : promo.subtitle_en,
+    title: language === 'th' ? promo.title_th : promo.title_en,
+    location: language === 'th' ? promo.location_th : promo.location_en,
+    price: Number(promo.price).toLocaleString(),
+    desc: language === 'th' ? promo.description_th : promo.description_en,
+    link: promo.link
   }));
 
   const nextSlide = () => {
-    if (isAnimating) return;
+    if (isAnimating || slides.length === 0) return;
     setIsAnimating(true);
     setCurrent((prev) => (prev === slides.length - 1 ? 0 : prev + 1));
   };
 
   const prevSlide = () => {
-    if (isAnimating) return;
+    if (isAnimating || slides.length === 0) return;
     setIsAnimating(true);
     setCurrent((prev) => (prev === 0 ? slides.length - 1 : prev - 1));
   };
@@ -46,11 +105,30 @@ export default function HighlightSlider() {
   }, [current]);
 
   useEffect(() => {
+    if (slides.length === 0) return;
     const interval = setInterval(() => {
       nextSlide();
     }, 6000);
     return () => clearInterval(interval);
-  }, [current]);
+  }, [current, slides.length]);
+
+  // Loading state
+  if (loading) {
+    return (
+      <section className="pt-24 pb-16 md:pt-28 md:pb-20 bg-gray-50">
+        <div className="container mx-auto px-6">
+          <div className="w-full h-[550px] md:h-[650px] rounded-[2.5rem] bg-gray-200 animate-pulse flex items-center justify-center">
+            <div className="text-gray-400">Loading...</div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  // No promotions available
+  if (slides.length === 0) {
+    return null;
+  }
 
   return (
     <section className="pt-24 pb-16 md:pt-28 md:pb-20 bg-gray-50">

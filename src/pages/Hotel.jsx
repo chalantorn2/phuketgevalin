@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   MapPin,
   Star,
@@ -10,9 +10,14 @@ import {
   RotateCcw,
 } from "lucide-react";
 import { useLanguage } from "../context/LanguageContext";
+import { hotelsAPI } from "../services/api";
 
-export default function Hotel() {
-  const { t } = useLanguage();
+export default function Hotel({ onViewDetail }) {
+  const { t, language } = useLanguage();
+
+  // Data State
+  const [hotels, setHotels] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   // Filter States
   const [activeLocation, setActiveLocation] = useState("all");
@@ -21,150 +26,49 @@ export default function Hotel() {
   const [checkInDate, setCheckInDate] = useState("");
   const [checkOutDate, setCheckOutDate] = useState("");
 
-  // Location keys for filter
-  const locationKeys = [
-    "all",
-    "phuket",
-    "krabi",
-    "samui",
-    "pattaya",
-    "bangkok",
-    "chiangmai",
-  ];
+  // Fetch hotels from API
+  useEffect(() => {
+    const fetchHotels = async () => {
+      setLoading(true);
+      try {
+        const data = await hotelsAPI.getAll();
+        if (data.success) {
+          setHotels(data.data || []);
+        }
+      } catch (error) {
+        console.error("Failed to fetch hotels:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchHotels();
+  }, []);
 
-  // Hotel data (static - prices, images, ratings)
-  const hotelData = [
-    {
-      id: 1,
-      locationKey: "phuket",
-      tagKey: "luxury",
-      image:
-        "https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=1000&auto=format&fit=crop",
-      stars: 5,
-      rating: 4.9,
-      reviews: 328,
-      price: 18900,
-      discountPrice: 25000,
-    },
-    {
-      id: 2,
-      locationKey: "krabi",
-      tagKey: "beachfront",
-      image:
-        "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?q=80&w=1000&auto=format&fit=crop",
-      stars: 5,
-      rating: 4.8,
-      reviews: 512,
-      price: 15500,
-      discountPrice: 21000,
-    },
-    {
-      id: 3,
-      locationKey: "samui",
-      tagKey: "honeymoon",
-      image:
-        "https://images.unsplash.com/photo-1573843981267-be1999ff37cd?q=80&w=1000&auto=format&fit=crop",
-      stars: 5,
-      rating: 4.7,
-      reviews: 189,
-      price: 8900,
-      discountPrice: 12500,
-    },
-    {
-      id: 4,
-      locationKey: "pattaya",
-      tagKey: "family",
-      image:
-        "https://images.unsplash.com/photo-1584132967334-10e028bd69f7?q=80&w=1000&auto=format&fit=crop",
-      stars: 5,
-      rating: 4.8,
-      reviews: 1024,
-      price: 6500,
-      discountPrice: 8900,
-    },
-    {
-      id: 5,
-      locationKey: "bangkok",
-      tagKey: "ultraLuxury",
-      image:
-        "https://images.unsplash.com/photo-1565031491338-45f963137636?q=80&w=1000&auto=format&fit=crop",
-      stars: 5,
-      rating: 4.9,
-      reviews: 150,
-      price: 22000,
-      discountPrice: 28000,
-    },
-    {
-      id: 6,
-      locationKey: "chiangmai",
-      tagKey: "boutique",
-      image:
-        "https://images.unsplash.com/photo-1586611292717-f828b167408c?q=80&w=1000&auto=format&fit=crop",
-      stars: 5,
-      rating: 4.8,
-      reviews: 210,
-      price: 7200,
-      discountPrice: 9500,
-    },
-    {
-      id: 7,
-      locationKey: "samui",
-      tagKey: "designHotel",
-      image:
-        "https://images.unsplash.com/photo-1522798514-97ceb8c4f1c8?q=80&w=1000&auto=format&fit=crop",
-      stars: 4,
-      rating: 4.6,
-      reviews: 340,
-      price: 9900,
-      discountPrice: 13000,
-    },
-    {
-      id: 8,
-      locationKey: "phuket",
-      tagKey: "nature",
-      image:
-        "https://images.unsplash.com/photo-1512918760513-95f192972701?q=80&w=1000&auto=format&fit=crop",
-      stars: 5,
-      rating: 4.8,
-      reviews: 420,
-      price: 16900,
-      discountPrice: 22000,
-    },
-    {
-      id: 9,
-      locationKey: "phuket",
-      tagKey: "budget",
-      image:
-        "https://images.unsplash.com/photo-1555854877-bab0e564b8d5?q=80&w=1000&auto=format&fit=crop",
-      stars: 3,
-      rating: 4.5,
-      reviews: 890,
-      price: 1200,
-      discountPrice: 2500,
-    },
-  ];
+  // Get unique locations from hotels
+  const locations = ["all", ...new Set(hotels.map((h) => h.location))];
 
-  // Get translated hotels
-  const translatedHotels = t("hotel.hotels");
-
-  // Merge hotel data with translations
-  const hotels = hotelData.map((hotel, index) => ({
+  // Helper function to get localized text
+  const getLocalizedHotel = (hotel) => ({
     ...hotel,
-    name: translatedHotels[index]?.name || "",
-    location: translatedHotels[index]?.location || "",
-    amenities: translatedHotels[index]?.amenities || [],
-    tag: t(`hotel.tags.${hotel.tagKey}`),
-    locationName: t(`hotel.locations.${hotel.locationKey}`),
-  }));
+    name: language === "th" ? hotel.name_th : hotel.name_en,
+    description: language === "th" ? hotel.description_th : hotel.description_en,
+    amenities: hotel.amenities ? hotel.amenities.split(",").map(a => a.trim()) : [],
+    stars: Math.round(hotel.rating) || 4,
+    price: Number(hotel.price_per_night),
+    discountPrice: Math.round(Number(hotel.price_per_night) * 1.3),
+    reviews: Math.floor(Math.random() * 500) + 50,
+  });
 
   // Logic to filter hotels
-  const filteredHotels = hotels.filter((hotel) => {
-    const matchLocation =
-      activeLocation === "all" || hotel.locationKey === activeLocation;
-    const matchStar = selectedStar === null || hotel.stars === selectedStar;
-    const matchPrice = hotel.price <= maxPrice;
-    return matchLocation && matchStar && matchPrice;
-  });
+  const filteredHotels = hotels
+    .map(getLocalizedHotel)
+    .filter((hotel) => {
+      const matchLocation =
+        activeLocation === "all" || hotel.location === activeLocation;
+      const matchStar = selectedStar === null || hotel.stars === selectedStar;
+      const matchPrice = hotel.price <= maxPrice;
+      return matchLocation && matchStar && matchPrice;
+    });
 
   const resetFilters = () => {
     setActiveLocation("all");
@@ -313,23 +217,23 @@ export default function Hotel() {
                   {t("hotel.filter.location.title")}
                 </h4>
                 <div className="space-y-2">
-                  {locationKeys.map((key) => (
+                  {locations.map((loc) => (
                     <label
-                      key={key}
+                      key={loc}
                       className={`flex items-center gap-3 cursor-pointer group p-2 rounded-lg transition-all ${
-                        activeLocation === key
+                        activeLocation === loc
                           ? "bg-primary-50"
                           : "hover:bg-gray-50"
                       }`}
                     >
                       <div
                         className={`w-5 h-5 rounded-md border flex items-center justify-center transition-all ${
-                          activeLocation === key
+                          activeLocation === loc
                             ? "bg-primary-500 border-primary-500"
                             : "border-gray-300 group-hover:border-primary-400 bg-white"
                         }`}
                       >
-                        {activeLocation === key && (
+                        {activeLocation === loc && (
                           <Check size={12} className="text-white" />
                         )}
                       </div>
@@ -337,17 +241,17 @@ export default function Hotel() {
                         type="radio"
                         name="location"
                         className="hidden"
-                        checked={activeLocation === key}
-                        onChange={() => setActiveLocation(key)}
+                        checked={activeLocation === loc}
+                        onChange={() => setActiveLocation(loc)}
                       />
                       <span
                         className={`text-sm ${
-                          activeLocation === key
+                          activeLocation === loc
                             ? "font-bold text-primary-700"
                             : "text-gray-600"
                         }`}
                       >
-                        {t(`hotel.locations.${key}`)}
+                        {loc === "all" ? t("hotel.locations.all") : loc}
                       </span>
                     </label>
                   ))}
@@ -367,29 +271,34 @@ export default function Hotel() {
                 </h2>
                 <p className="text-gray-500 text-sm mt-1">
                   {t("hotel.results.showingIn")}{" "}
-                  {t(`hotel.locations.${activeLocation}`)}
+                  {activeLocation === "all" ? t("hotel.locations.all") : activeLocation}
                 </p>
               </div>
             </div>
 
-            {/* Listings Grid */}
-            {filteredHotels.length > 0 ? (
+            {/* Loading State */}
+            {loading ? (
+              <div className="flex items-center justify-center h-64">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500"></div>
+              </div>
+            ) : filteredHotels.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                 {filteredHotels.map((hotel) => (
                   <div
                     key={hotel.id}
-                    className="group bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl hover:shadow-primary-500/10 transition-all duration-500 flex flex-col h-full hover:-translate-y-1"
+                    onClick={() => onViewDetail && onViewDetail(hotel.id)}
+                    className="group bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl hover:shadow-primary-500/10 transition-all duration-500 flex flex-col h-full hover:-translate-y-1 cursor-pointer"
                   >
                     {/* Image */}
                     <div className="relative h-56 overflow-hidden">
                       <img
-                        src={hotel.image}
+                        src={hotel.image || "https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=1000&auto=format&fit=crop"}
                         alt={hotel.name}
                         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                       />
                       <div className="absolute top-4 left-4">
                         <span className="px-3 py-1 rounded-full bg-white/90 backdrop-blur-md text-gray-800 text-[10px] font-bold uppercase tracking-wider shadow-sm border border-white/20">
-                          {hotel.tag}
+                          {hotel.location}
                         </span>
                       </div>
                       <div className="absolute top-4 right-4 flex gap-0.5 bg-black/20 backdrop-blur-md rounded-lg px-2 py-1">
@@ -414,7 +323,7 @@ export default function Hotel() {
                           size={14}
                           className="text-primary-500 flex-shrink-0"
                         />
-                        <span className="line-clamp-1">{hotel.location}</span>
+                        <span className="line-clamp-1">{hotel.address || hotel.location}</span>
                       </div>
 
                       {/* Amenities */}
@@ -445,9 +354,11 @@ export default function Hotel() {
                             </span>
                           </div>
                         </div>
-                        <button className="w-8 h-8 rounded-full bg-primary-50 text-primary-600 flex items-center justify-center hover:bg-primary-500 hover:text-white transition-all shadow-sm cursor-pointer">
-                          <Search size={16} />
-                        </button>
+                        <div className="flex items-center gap-1 text-xs text-gray-500">
+                          <Star size={12} className="text-yellow-400 fill-yellow-400" />
+                          <span className="font-medium">{hotel.rating}</span>
+                          <span>({hotel.reviews})</span>
+                        </div>
                       </div>
                     </div>
                   </div>

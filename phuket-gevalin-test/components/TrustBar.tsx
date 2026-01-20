@@ -26,7 +26,7 @@ const TrustBar: React.FC = () => {
   ];
 
   return (
-    <div className="bg-white border-b border-gray-100 relative z-20 -mt-8 mx-6 rounded-2xl shadow-xl lg:mx-auto lg:max-w-6xl lg:-mt-16">
+    <div id="about" className="bg-white border-b border-gray-100 relative z-20 -mt-8 mx-6 rounded-2xl shadow-xl lg:mx-auto lg:max-w-6xl lg:-mt-16">
       <div className="grid grid-cols-2 md:grid-cols-4 divide-x divide-gray-100">
         {features.map((item, index) => (
           <div key={index} className="flex flex-col md:flex-row items-center justify-center gap-3 p-6 text-center md:text-left group cursor-default hover:bg-gray-50 transition-colors first:rounded-l-2xl last:rounded-r-2xl">

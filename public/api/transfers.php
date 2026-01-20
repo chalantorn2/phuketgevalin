@@ -14,12 +14,13 @@ try {
     switch ($method) {
         case 'GET':
             $id = $_GET['id'] ?? null;
+            $showAll = isset($_GET['all']) && $_GET['all'] === 'true';
 
             if ($id) {
-                $transfer = $db->fetchOne(
-                    "SELECT * FROM transfers WHERE id = ? AND status = 'active'",
-                    [(int)$id]
-                );
+                $sql = $showAll
+                    ? "SELECT * FROM transfers WHERE id = ?"
+                    : "SELECT * FROM transfers WHERE id = ? AND status = 'active'";
+                $transfer = $db->fetchOne($sql, [(int)$id]);
 
                 if ($transfer) {
                     successResponse($transfer);
@@ -31,15 +32,24 @@ try {
                 $limit = (int)($_GET['limit'] ?? 20);
                 $offset = (int)($_GET['offset'] ?? 0);
 
-                $sql = "SELECT * FROM transfers WHERE status = 'active'";
+                $sql = "SELECT * FROM transfers";
                 $params = [];
+                $conditions = [];
+
+                if (!$showAll) {
+                    $conditions[] = "status = 'active'";
+                }
 
                 if ($type) {
-                    $sql .= " AND type = ?";
+                    $conditions[] = "type = ?";
                     $params[] = $type;
                 }
 
-                $sql .= " ORDER BY price ASC LIMIT ? OFFSET ?";
+                if (!empty($conditions)) {
+                    $sql .= " WHERE " . implode(" AND ", $conditions);
+                }
+
+                $sql .= " ORDER BY type, price ASC LIMIT ? OFFSET ?";
                 $params[] = $limit;
                 $params[] = $offset;
 
@@ -75,6 +85,61 @@ try {
             );
 
             successResponse(['id' => $id], 'Transfer created successfully');
+            break;
+
+        case 'PUT':
+            $data = getJsonInput();
+            $id = $_GET['id'] ?? $data['id'] ?? null;
+
+            if (!$id) {
+                errorResponse('Transfer ID is required');
+            }
+
+            $db->execute(
+                "UPDATE transfers SET
+                    name_th = COALESCE(?, name_th),
+                    name_en = COALESCE(?, name_en),
+                    description_th = COALESCE(?, description_th),
+                    description_en = COALESCE(?, description_en),
+                    type = COALESCE(?, type),
+                    price = COALESCE(?, price),
+                    vehicle_type = COALESCE(?, vehicle_type),
+                    max_passengers = COALESCE(?, max_passengers),
+                    image = COALESCE(?, image),
+                    status = COALESCE(?, status),
+                    updated_at = NOW()
+                 WHERE id = ?",
+                [
+                    $data['name_th'] ?? null,
+                    $data['name_en'] ?? null,
+                    $data['description_th'] ?? null,
+                    $data['description_en'] ?? null,
+                    $data['type'] ?? null,
+                    $data['price'] ?? null,
+                    $data['vehicle_type'] ?? null,
+                    $data['max_passengers'] ?? null,
+                    $data['image'] ?? null,
+                    $data['status'] ?? null,
+                    (int)$id
+                ]
+            );
+
+            successResponse(null, 'Transfer updated successfully');
+            break;
+
+        case 'DELETE':
+            $id = $_GET['id'] ?? null;
+
+            if (!$id) {
+                errorResponse('Transfer ID is required');
+            }
+
+            $db->execute(
+                "UPDATE transfers SET status = 'inactive', updated_at = NOW() WHERE id = ?",
+                [(int)$id]
+            );
+
+            successResponse(null, 'Transfer deleted successfully');
             break;
 
         default:

@@ -13,12 +13,13 @@ try {
     switch ($method) {
         case 'GET':
             $id = $_GET['id'] ?? null;
+            $showAll = isset($_GET['all']) && $_GET['all'] === 'true';
 
             if ($id) {
-                $hotel = $db->fetchOne(
-                    "SELECT * FROM hotels WHERE id = ? AND status = 'active'",
-                    [(int)$id]
-                );
+                $sql = $showAll
+                    ? "SELECT * FROM hotels WHERE id = ?"
+                    : "SELECT * FROM hotels WHERE id = ? AND status = 'active'";
+                $hotel = $db->fetchOne($sql, [(int)$id]);
 
                 if ($hotel) {
                     successResponse($hotel);
@@ -30,12 +31,21 @@ try {
                 $limit = (int)($_GET['limit'] ?? 20);
                 $offset = (int)($_GET['offset'] ?? 0);
 
-                $sql = "SELECT * FROM hotels WHERE status = 'active'";
+                $sql = "SELECT * FROM hotels";
                 $params = [];
+                $conditions = [];
+
+                if (!$showAll) {
+                    $conditions[] = "status = 'active'";
+                }
 
                 if ($location) {
-                    $sql .= " AND location = ?";
+                    $conditions[] = "location = ?";
                     $params[] = $location;
+                }
+
+                if (!empty($conditions)) {
+                    $sql .= " WHERE " . implode(" AND ", $conditions);
                 }
 
                 $sql .= " ORDER BY rating DESC, created_at DESC LIMIT ? OFFSET ?";
@@ -58,14 +68,15 @@ try {
             }
 
             $id = $db->insert(
-                "INSERT INTO hotels (name_th, name_en, description_th, description_en, location, price_per_night, rating, image, amenities, status, created_at)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', NOW())",
+                "INSERT INTO hotels (name_th, name_en, description_th, description_en, location, address, price_per_night, rating, image, amenities, status, created_at)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', NOW())",
                 [
                     sanitize($data['name_th']),
                     sanitize($data['name_en']),
                     sanitize($data['description_th'] ?? ''),
                     sanitize($data['description_en'] ?? ''),
                     sanitize($data['location']),
+                    sanitize($data['address'] ?? ''),
                     (float)$data['price_per_night'],
                     (float)($data['rating'] ?? 0),
                     sanitize($data['image'] ?? ''),
@@ -74,6 +85,63 @@ try {
             );
 
             successResponse(['id' => $id], 'Hotel created successfully');
+            break;
+
+        case 'PUT':
+            $data = getJsonInput();
+            $id = $_GET['id'] ?? $data['id'] ?? null;
+
+            if (!$id) {
+                errorResponse('Hotel ID is required');
+            }
+
+            $db->execute(
+                "UPDATE hotels SET
+                    name_th = COALESCE(?, name_th),
+                    name_en = COALESCE(?, name_en),
+                    description_th = COALESCE(?, description_th),
+                    description_en = COALESCE(?, description_en),
+                    location = COALESCE(?, location),
+                    address = COALESCE(?, address),
+                    price_per_night = COALESCE(?, price_per_night),
+                    rating = COALESCE(?, rating),
+                    image = COALESCE(?, image),
+                    amenities = COALESCE(?, amenities),
+                    status = COALESCE(?, status),
+                    updated_at = NOW()
+                 WHERE id = ?",
+                [
+                    $data['name_th'] ?? null,
+                    $data['name_en'] ?? null,
+                    $data['description_th'] ?? null,
+                    $data['description_en'] ?? null,
+                    $data['location'] ?? null,
+                    $data['address'] ?? null,
+                    $data['price_per_night'] ?? null,
+                    $data['rating'] ?? null,
+                    $data['image'] ?? null,
+                    $data['amenities'] ?? null,
+                    $data['status'] ?? null,
+                    (int)$id
+                ]
+            );
+
+            successResponse(null, 'Hotel updated successfully');
+            break;
+
+        case 'DELETE':
+            $id = $_GET['id'] ?? null;
+
+            if (!$id) {
+                errorResponse('Hotel ID is required');
+            }
+
+            $db->execute(
+                "UPDATE hotels SET status = 'inactive', updated_at = NOW() WHERE id = ?",
+                [(int)$id]
+            );
+
+            successResponse(null, 'Hotel deleted successfully');
             break;
 
         default:

@@ -6,15 +6,20 @@ RewriteEngine On
 # Set default charset
 AddDefaultCharset UTF-8
 
-# CORS Headers - ใช้ always set เพื่อให้ทำงานกับทุก response
-Header always set Access-Control-Allow-Origin "*"
-Header always set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
-Header always set Access-Control-Allow-Headers "Content-Type, Authorization, X-Requested-With"
-Header always set Access-Control-Max-Age "86400"
+# CORS Headers for preflight (OPTIONS) requests
+<IfModule mod_headers.c>
+    # Set CORS headers based on Origin
+    SetEnvIf Origin "^http(s)?://(localhost:5173|www\.phuketgevalin\.com|phuketgevalin\.com)$" CORS_ORIGIN=$0
+    Header always set Access-Control-Allow-Origin %{CORS_ORIGIN}e env=CORS_ORIGIN
+    Header always set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
+    Header always set Access-Control-Allow-Headers "Content-Type, Authorization, X-Requested-With"
+    Header always set Access-Control-Allow-Credentials "true"
+    Header always set Access-Control-Max-Age "86400"
+</IfModule>
 
-# Handle OPTIONS preflight requests
+# Handle OPTIONS preflight requests - return 200 immediately
 RewriteCond %{REQUEST_METHOD} OPTIONS
-RewriteRule ^(.*)$ $1 [R=200,L]
+RewriteRule ^(.*)$ - [R=200,L]
 
 # Route all API requests to index.php
 RewriteCond %{REQUEST_FILENAME} !-f

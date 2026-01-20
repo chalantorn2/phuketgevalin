@@ -3,8 +3,10 @@
  * เชื่อมต่อ React กับ Backend PHP
  */
 
-// API Base URL
-const API_BASE_URL = '/api';
+// API Base URL - ใช้ production URL สำหรับ development เพื่อหลีกเลี่ยงปัญหา proxy
+const API_BASE_URL = window.location.hostname === 'localhost'
+  ? 'https://www.phuketgevalin.com/api'
+  : '/api';
 
 /**
  * Generic fetch wrapper with error handling
@@ -13,6 +15,7 @@ async function fetchAPI(endpoint, options = {}) {
   const url = `${API_BASE_URL}/${endpoint}`;
 
   const defaultOptions = {
+    credentials: 'include', // ส่ง cookies ไปกับทุก request เพื่อรักษา session
     headers: {
       'Content-Type': 'application/json',
     },
@@ -43,23 +46,23 @@ async function fetchAPI(endpoint, options = {}) {
 }
 
 // ============================================
-// Tours API
+// Package Tours API
 // ============================================
-export const toursAPI = {
+export const packageToursAPI = {
   getAll: (params = {}) => {
     const query = new URLSearchParams(params).toString();
-    return fetchAPI(`tours${query ? `?${query}` : ''}`);
+    return fetchAPI(`package_tours${query ? `?${query}` : ''}`);
   },
-  getById: (id) => fetchAPI(`tours?id=${id}`),
-  create: (data) => fetchAPI('tours', {
+  getById: (id) => fetchAPI(`package_tours?id=${id}`),
+  create: (data) => fetchAPI('package_tours', {
     method: 'POST',
     body: JSON.stringify(data),
   }),
-  update: (id, data) => fetchAPI(`tours?id=${id}`, {
+  update: (id, data) => fetchAPI(`package_tours?id=${id}`, {
     method: 'PUT',
     body: JSON.stringify(data),
   }),
-  delete: (id) => fetchAPI(`tours?id=${id}`, {
+  delete: (id) => fetchAPI(`package_tours?id=${id}`, {
     method: 'DELETE',
   }),
 };
@@ -149,6 +152,50 @@ export const contactAPI = {
 };
 
 // ============================================
+// Promotions API
+// ============================================
+export const promotionsAPI = {
+  getAll: (showAll = false) => fetchAPI(`promotions${showAll ? '?all=true' : ''}`),
+  getById: (id) => fetchAPI(`promotions?id=${id}`),
+  create: (data) => fetchAPI('promotions', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }),
+  update: (id, data) => fetchAPI(`promotions?id=${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  }),
+  delete: (id) => fetchAPI(`promotions?id=${id}`, {
+    method: 'DELETE',
+  }),
+};
+
+// ============================================
+// One Day Trips API
+// ============================================
+export const onedayTripsAPI = {
+  getAll: (showAll = false, province = null) => {
+    let query = showAll ? '?all=true' : '';
+    if (province && province !== 'all') {
+      query += (query ? '&' : '?') + `province=${province}`;
+    }
+    return fetchAPI(`oneday_trips${query}`);
+  },
+  getById: (id) => fetchAPI(`oneday_trips?id=${id}`),
+  create: (data) => fetchAPI('oneday_trips', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }),
+  update: (id, data) => fetchAPI(`oneday_trips?id=${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  }),
+  delete: (id) => fetchAPI(`oneday_trips?id=${id}`, {
+    method: 'DELETE',
+  }),
+};
+
+// ============================================
 // Auth API
 // ============================================
 export const authAPI = {
@@ -169,7 +216,7 @@ export const authAPI = {
 export const adminAPI = {
   getDashboard: () => fetchAPI('admin?action=dashboard'),
   getBookings: (status = '') => fetchAPI(`admin?action=bookings${status && status !== 'all' ? `&status=${status}` : ''}`),
-  getTours: () => fetchAPI('admin?action=tours'),
+  getPackageTours: () => fetchAPI('admin?action=package_tours'),
   getHotels: () => fetchAPI('admin?action=hotels'),
   getTransfers: () => fetchAPI('admin?action=transfers'),
   getContacts: () => fetchAPI('admin?action=contacts'),
@@ -181,11 +228,13 @@ export const adminAPI = {
 export const testConnection = () => fetchAPI('');
 
 export default {
-  tours: toursAPI,
+  packageTours: packageToursAPI,
   hotels: hotelsAPI,
   transfers: transfersAPI,
   bookings: bookingsAPI,
   contact: contactAPI,
+  promotions: promotionsAPI,
+  onedayTrips: onedayTripsAPI,
   auth: authAPI,
   admin: adminAPI,
   testConnection,

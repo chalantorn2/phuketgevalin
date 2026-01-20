@@ -1,10 +1,14 @@
-import { useState } from "react";
-import { MapPin, Clock, Star, Heart, Map } from "lucide-react";
+import { useState, useEffect } from "react";
+import { MapPin, Clock, Star, Heart, Map, Loader2 } from "lucide-react";
 import { useLanguage } from "../context/LanguageContext";
+import { onedayTripsAPI } from "../services/api";
 
-export default function OneDayTrip() {
-  const { t } = useLanguage();
+export default function OneDayTrip({ onViewDetail }) {
+  const { t, language } = useLanguage();
   const [activeProvince, setActiveProvince] = useState("all");
+  const [trips, setTrips] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   // Province keys for filter
   const provinceKeys = [
@@ -17,116 +21,48 @@ export default function OneDayTrip() {
     "bangkok",
   ];
 
-  // Trip data (prices stay the same across languages)
-  const tripData = [
-    {
-      id: 1,
-      provinceKey: "prachuap",
-      image:
-        "https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?q=80&w=1000&auto=format&fit=crop",
-      rating: 4.8,
-      reviews: 124,
-      price: 1590,
-      discountPrice: 2200,
-      bestseller: true,
-    },
-    {
-      id: 2,
-      provinceKey: "phuket",
-      image:
-        "https://images.unsplash.com/photo-1598895015795-c49c55b5d141?q=80&w=1000&auto=format&fit=crop",
-      rating: 4.9,
-      reviews: 856,
-      price: 2490,
-      discountPrice: 3500,
-      bestseller: true,
-    },
-    {
-      id: 3,
-      provinceKey: "ayutthaya",
-      image:
-        "https://images.unsplash.com/photo-1528181304800-259b08848526?q=80&w=1000&auto=format&fit=crop",
-      rating: 4.7,
-      reviews: 342,
-      price: 890,
-      discountPrice: 1290,
-      bestseller: false,
-    },
-    {
-      id: 4,
-      provinceKey: "krabi",
-      image:
-        "https://images.unsplash.com/photo-1518509562904-e7ef99cdcc86?q=80&w=1000&auto=format&fit=crop",
-      rating: 4.8,
-      reviews: 1120,
-      price: 990,
-      discountPrice: 1500,
-      bestseller: true,
-    },
-    {
-      id: 5,
-      provinceKey: "bangkok",
-      image:
-        "https://images.unsplash.com/photo-1621244249243-436b79b5eea8?q=80&w=1000&auto=format&fit=crop",
-      rating: 4.8,
-      reviews: 550,
-      price: 1200,
-      discountPrice: 1800,
-      bestseller: true,
-    },
-    {
-      id: 6,
-      provinceKey: "phangnga",
-      image:
-        "https://images.unsplash.com/photo-1552550186-b4845558163f?q=80&w=1000&auto=format&fit=crop",
-      rating: 4.7,
-      reviews: 420,
-      price: 1800,
-      discountPrice: 2500,
-      bestseller: false,
-    },
-    {
-      id: 7,
-      provinceKey: "suratthani",
-      image:
-        "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1000&auto=format&fit=crop",
-      rating: 4.9,
-      reviews: 310,
-      price: 2100,
-      discountPrice: 2900,
-      bestseller: true,
-    },
-    {
-      id: 8,
-      provinceKey: "phuket",
-      image:
-        "https://images.unsplash.com/photo-1589394815804-989b37519385?q=80&w=1000&auto=format&fit=crop",
-      rating: 4.6,
-      reviews: 180,
-      price: 1500,
-      discountPrice: 2200,
-      bestseller: false,
-    },
-  ];
+  // Fetch trips from API
+  useEffect(() => {
+    fetchTrips();
+  }, []);
 
-  // Get translated trips
-  const translatedTrips = t("oneDayTrip.trips");
+  const fetchTrips = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await onedayTripsAPI.getAll(false);
+      if (response.success) {
+        setTrips(response.data || []);
+      } else {
+        setError(response.message || "Failed to fetch trips");
+      }
+    } catch (err) {
+      console.error("Failed to fetch trips:", err);
+      setError("Failed to load trips. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  // Merge trip data with translations
-  const trips = tripData.map((trip, index) => ({
+  // Get trip data with translated fields based on language
+  const getLocalizedTrip = (trip) => ({
     ...trip,
-    title: translatedTrips[index]?.title || "",
-    location: translatedTrips[index]?.location || "",
-    duration: translatedTrips[index]?.duration || "",
-    tags: translatedTrips[index]?.tags || [],
-    provinceName: t(`oneDayTrip.provinces.${trip.provinceKey}`),
-  }));
+    title: language === "th" ? trip.title_th : trip.title_en,
+    description: language === "th" ? trip.description_th : trip.description_en,
+    location: language === "th" ? trip.location_th : trip.location_en,
+    duration: language === "th" ? trip.duration_th : trip.duration_en,
+    tags: language === "th" ? (trip.tags_th || []) : (trip.tags_en || []),
+    provinceName: t(`oneDayTrip.provinces.${trip.province_key}`) || trip.province_key,
+  });
 
-  // Filter trips
+  // Filter trips by province
   const filteredTrips =
     activeProvince === "all"
       ? trips
-      : trips.filter((trip) => trip.provinceKey === activeProvince);
+      : trips.filter((trip) => trip.province_key === activeProvince);
+
+  // Localize filtered trips
+  const localizedTrips = filteredTrips.map(getLocalizedTrip);
 
   return (
     <div className="bg-gray-50 min-h-screen pb-24">
@@ -180,13 +116,41 @@ export default function OneDayTrip() {
           </div>
         </div>
 
+        {/* Loading State */}
+        {loading && (
+          <div className="flex flex-col items-center justify-center py-20">
+            <Loader2 size={48} className="text-primary-500 animate-spin mb-4" />
+            <p className="text-gray-500">{t("common.loading") || "Loading..."}</p>
+          </div>
+        )}
+
+        {/* Error State */}
+        {error && !loading && (
+          <div className="text-center py-20">
+            <div className="bg-red-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 text-red-500">
+              <Map size={32} />
+            </div>
+            <h3 className="text-xl font-bold text-gray-600 mb-2">
+              {t("common.error") || "Error"}
+            </h3>
+            <p className="text-gray-400 mb-4">{error}</p>
+            <button
+              onClick={fetchTrips}
+              className="px-6 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition"
+            >
+              {t("common.retry") || "Try Again"}
+            </button>
+          </div>
+        )}
+
         {/* Trips Grid */}
-        {filteredTrips.length > 0 ? (
+        {!loading && !error && localizedTrips.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {filteredTrips.map((trip) => (
+            {localizedTrips.map((trip) => (
               <div
                 key={trip.id}
-                className="group bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl hover:shadow-primary-500/10 transition-all duration-500 relative flex flex-col h-full hover:-translate-y-1"
+                onClick={() => onViewDetail && onViewDetail(trip.id)}
+                className="group bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl hover:shadow-primary-500/10 transition-all duration-500 relative flex flex-col h-full hover:-translate-y-1 cursor-pointer"
               >
                 {/* Image */}
                 <div className="relative h-56 overflow-hidden">
@@ -197,7 +161,7 @@ export default function OneDayTrip() {
                   />
 
                   <div className="absolute top-3 left-3 flex gap-2">
-                    {trip.bestseller && (
+                    {trip.bestseller === 1 && (
                       <span className="px-2 py-1 rounded-lg bg-yellow-400 text-yellow-950 text-[10px] font-bold uppercase tracking-wider shadow-sm flex items-center gap-1">
                         <Star size={10} className="fill-yellow-950" />{" "}
                         {t("oneDayTrip.card.hot")}
@@ -208,7 +172,10 @@ export default function OneDayTrip() {
                     </span>
                   </div>
 
-                  <button className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/30 backdrop-blur-md text-white hover:bg-white hover:text-red-500 transition-all flex items-center justify-center cursor-pointer">
+                  <button
+                    onClick={(e) => e.stopPropagation()}
+                    className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/30 backdrop-blur-md text-white hover:bg-white hover:text-red-500 transition-all flex items-center justify-center cursor-pointer"
+                  >
                     <Heart size={16} />
                   </button>
                 </div>
@@ -230,8 +197,19 @@ export default function OneDayTrip() {
                     </div>
                   </div>
 
+                  {/* Rating */}
+                  {trip.rating && (
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="flex items-center gap-1">
+                        <Star size={14} className="text-yellow-400 fill-yellow-400" />
+                        <span className="text-sm font-semibold text-gray-700">{trip.rating}</span>
+                      </div>
+                      <span className="text-xs text-gray-400">({trip.reviews} {t("common.reviews") || "reviews"})</span>
+                    </div>
+                  )}
+
                   <div className="flex flex-wrap gap-2 mb-4 mt-auto">
-                    {trip.tags.map((tag, i) => (
+                    {(trip.tags || []).slice(0, 3).map((tag, i) => (
                       <span
                         key={i}
                         className="text-[10px] px-2 py-1 bg-gray-50 text-gray-500 rounded-md border border-gray-100"
@@ -244,14 +222,22 @@ export default function OneDayTrip() {
                   {/* Footer */}
                   <div className="pt-3 border-t border-gray-50 flex items-center justify-between">
                     <div className="flex flex-col">
-                      <span className="text-[10px] text-gray-400 line-through">
-                        ฿{trip.discountPrice.toLocaleString()}
-                      </span>
+                      {trip.discount_price && (
+                        <span className="text-[10px] text-gray-400 line-through">
+                          ฿{Number(trip.discount_price).toLocaleString()}
+                        </span>
+                      )}
                       <span className="text-lg font-bold text-primary-600">
-                        ฿{trip.price.toLocaleString()}
+                        ฿{Number(trip.price).toLocaleString()}
                       </span>
                     </div>
-                    <button className="px-4 py-2 rounded-xl bg-primary-50 text-primary-600 text-sm font-bold hover:bg-primary-500 hover:text-white transition-all cursor-pointer">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onViewDetail && onViewDetail(trip.id);
+                      }}
+                      className="px-4 py-2 rounded-xl bg-primary-50 text-primary-600 text-sm font-bold hover:bg-primary-500 hover:text-white transition-all cursor-pointer"
+                    >
                       {t("oneDayTrip.card.book")}
                     </button>
                   </div>
@@ -259,7 +245,10 @@ export default function OneDayTrip() {
               </div>
             ))}
           </div>
-        ) : (
+        )}
+
+        {/* Empty State */}
+        {!loading && !error && localizedTrips.length === 0 && (
           <div className="text-center py-20">
             <div className="bg-gray-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-400">
               <Map size={32} />

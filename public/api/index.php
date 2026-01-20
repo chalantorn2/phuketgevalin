@@ -33,8 +33,8 @@ if ($path === 'test' || $path === '') {
 
 // Route to appropriate handler
 switch ($path) {
-    case 'tours':
-        require_once __DIR__ . '/tours.php';
+    case 'package_tours':
+        require_once __DIR__ . '/package_tours.php';
         break;
 
     case 'bookings':
@@ -53,12 +53,20 @@ switch ($path) {
         require_once __DIR__ . '/transfers.php';
         break;
 
+    case 'oneday_trips':
+        require_once __DIR__ . '/oneday_trips.php';
+        break;
+
     case 'auth':
         require_once __DIR__ . '/auth.php';
         break;
 
     case 'admin':
         require_once __DIR__ . '/admin.php';
+        break;
+
+    case 'promotions':
+        require_once __DIR__ . '/promotions.php';
         break;
 
     default:

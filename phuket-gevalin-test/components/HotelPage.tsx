@@ -2,7 +2,11 @@ import React, { useState } from 'react';
 import { MapPin, Star, Check, Calendar, DollarSign, Search, Filter, RotateCcw } from 'lucide-react';
 import Button from './Button';
 
-const HotelPage: React.FC = () => {
+interface HotelPageProps {
+  onSelectHotel?: (id: number) => void;
+}
+
+const HotelPage: React.FC<HotelPageProps> = ({ onSelectHotel }) => {
   // Filter States
   const [activeLocation, setActiveLocation] = useState("ทั้งหมด");
   const [selectedStar, setSelectedStar] = useState<number | null>(null); // null means all
@@ -331,15 +335,17 @@ const HotelPage: React.FC = () => {
                            แสดงโรงแรมใน {activeLocation}
                         </p>
                      </div>
-                     
-                     {/* Mobile Only: Quick Filter Info or Sort (Optional) */}
                 </div>
 
                 {/* Listings Grid */}
                 {filteredHotels.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                     {filteredHotels.map((hotel) => (
-                        <div key={hotel.id} className="group bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl hover:shadow-brand-500/10 transition-all duration-500 flex flex-col h-full hover:-translate-y-1">
+                        <div 
+                          key={hotel.id} 
+                          onClick={() => onSelectHotel?.(hotel.id)}
+                          className="group bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl hover:shadow-brand-500/10 transition-all duration-500 flex flex-col h-full hover:-translate-y-1 cursor-pointer"
+                        >
                             
                             {/* Image */}
                             <div className="relative h-56 overflow-hidden">

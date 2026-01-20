@@ -1,6 +1,6 @@
 <?php
 /**
- * Tours API - Phuket Gevalin
+ * Package Tours API - Phuket Gevalin
  */
 
 require_once __DIR__ . '/config.php';
@@ -12,29 +12,29 @@ $db = Database::getInstance();
 try {
     switch ($method) {
         case 'GET':
-            // Get tour by ID or list all tours
+            // Get package tour by ID or list all package tours
             $id = $_GET['id'] ?? null;
             $showAll = isset($_GET['all']) && $_GET['all'] === 'true';
 
             if ($id) {
-                // Get single tour
+                // Get single package tour
                 $sql = $showAll
-                    ? "SELECT * FROM tours WHERE id = ?"
-                    : "SELECT * FROM tours WHERE id = ? AND status = 'active'";
-                $tour = $db->fetchOne($sql, [(int)$id]);
+                    ? "SELECT * FROM package_tours WHERE id = ?"
+                    : "SELECT * FROM package_tours WHERE id = ? AND status = 'active'";
+                $packageTour = $db->fetchOne($sql, [(int)$id]);
 
-                if ($tour) {
-                    successResponse($tour);
+                if ($packageTour) {
+                    successResponse($packageTour);
                 } else {
-                    errorResponse('Tour not found', 404);
+                    errorResponse('Package tour not found', 404);
                 }
             } else {
-                // List all tours with optional filters
+                // List all package tours with optional filters
                 $category = $_GET['category'] ?? null;
                 $limit = (int)($_GET['limit'] ?? 20);
                 $offset = (int)($_GET['offset'] ?? 0);
 
-                $sql = "SELECT * FROM tours";
+                $sql = "SELECT * FROM package_tours";
                 $params = [];
                 $conditions = [];
 
@@ -55,10 +55,10 @@ try {
                 $params[] = $limit;
                 $params[] = $offset;
 
-                $tours = $db->fetchAll($sql, $params);
+                $packageTours = $db->fetchAll($sql, $params);
 
                 // Get total count
-                $countSql = "SELECT COUNT(*) as total FROM tours";
+                $countSql = "SELECT COUNT(*) as total FROM package_tours";
                 $countParams = [];
                 $countConditions = [];
 
@@ -75,7 +75,7 @@ try {
                 $total = $db->fetchOne($countSql, $countParams);
 
                 successResponse([
-                    'tours' => $tours,
+                    'package_tours' => $packageTours,
                     'total' => $total['total'] ?? 0,
                     'limit' => $limit,
                     'offset' => $offset
@@ -84,7 +84,7 @@ try {
             break;
 
         case 'POST':
-            // Create new tour (admin only)
+            // Create new package tour (admin only)
             $data = getJsonInput();
 
             $required = ['name_th', 'name_en', 'price', 'category'];
@@ -95,7 +95,7 @@ try {
             }
 
             $id = $db->insert(
-                "INSERT INTO tours (name_th, name_en, description_th, description_en, price, category, image, duration, status, created_at)
+                "INSERT INTO package_tours (name_th, name_en, description_th, description_en, price, category, image, duration, status, created_at)
                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'active', NOW())",
                 [
                     sanitize($data['name_th']),
@@ -109,20 +109,20 @@ try {
                 ]
             );
 
-            successResponse(['id' => $id], 'Tour created successfully');
+            successResponse(['id' => $id], 'Package tour created successfully');
             break;
 
         case 'PUT':
-            // Update tour
+            // Update package tour
             $data = getJsonInput();
             $id = $_GET['id'] ?? $data['id'] ?? null;
 
             if (!$id) {
-                errorResponse('Tour ID is required');
+                errorResponse('Package tour ID is required');
             }
 
             $db->execute(
-                "UPDATE tours SET
+                "UPDATE package_tours SET
                     name_th = COALESCE(?, name_th),
                     name_en = COALESCE(?, name_en),
                     description_th = COALESCE(?, description_th),
@@ -148,29 +148,29 @@ try {
                 ]
             );
 
-            successResponse(null, 'Tour updated successfully');
+            successResponse(null, 'Package tour updated successfully');
             break;
 
         case 'DELETE':
-            // Soft delete tour
+            // Soft delete package tour
             $id = $_GET['id'] ?? null;
 
             if (!$id) {
-                errorResponse('Tour ID is required');
+                errorResponse('Package tour ID is required');
             }
 
             $db->execute(
-                "UPDATE tours SET status = 'inactive', updated_at = NOW() WHERE id = ?",
+                "UPDATE package_tours SET status = 'inactive', updated_at = NOW() WHERE id = ?",
                 [(int)$id]
             );
 
-            successResponse(null, 'Tour deleted successfully');
+            successResponse(null, 'Package tour deleted successfully');
             break;
 
         default:
             errorResponse('Method not allowed', 405);
     }
 } catch (Exception $e) {
-    error_log("Tours API Error: " . $e->getMessage());
+    error_log("Package Tours API Error: " . $e->getMessage());
     errorResponse('Server error', 500);
 }

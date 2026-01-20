@@ -2,7 +2,11 @@ import React, { useState } from 'react';
 import { MapPin, Clock, Star, Heart, Filter, CheckCircle2, ArrowRight, Map } from 'lucide-react';
 import Button from './Button';
 
-const OneDayTripPage: React.FC = () => {
+interface OneDayTripPageProps {
+  onSelectTour: (id: number) => void;
+}
+
+const OneDayTripPage: React.FC<OneDayTripPageProps> = ({ onSelectTour }) => {
   const [activeProvince, setActiveProvince] = useState("ทั้งหมด");
 
   const provinces = ["ทั้งหมด", "ภูเก็ต", "กระบี่", "พังงา", "สุราษฎร์ธานี", "อยุธยา", "กรุงเทพฯ"];
@@ -192,7 +196,11 @@ const OneDayTripPage: React.FC = () => {
         {filteredTrips.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {filteredTrips.map((trip) => (
-                  <div key={trip.id} className="group bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl hover:shadow-brand-500/10 transition-all duration-500 relative flex flex-col h-full hover:-translate-y-1">
+                  <div 
+                    key={trip.id} 
+                    onClick={() => onSelectTour(trip.id)}
+                    className="group bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl hover:shadow-brand-500/10 transition-all duration-500 relative flex flex-col h-full hover:-translate-y-1 cursor-pointer"
+                  >
                       
                       {/* Image */}
                       <div className="relative h-56 overflow-hidden">
@@ -213,7 +221,10 @@ const OneDayTripPage: React.FC = () => {
                                </span>
                           </div>
 
-                          <button className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/30 backdrop-blur-md text-white hover:bg-white hover:text-red-500 transition-all flex items-center justify-center">
+                          <button 
+                            className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/30 backdrop-blur-md text-white hover:bg-white hover:text-red-500 transition-all flex items-center justify-center"
+                            onClick={(e) => { e.stopPropagation(); /* Add to wishlist logic */ }}
+                          >
                               <Heart size={16} />
                           </button>
                       </div>

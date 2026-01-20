@@ -6,8 +6,7 @@
 
 require_once __DIR__ . '/config.php';
 setCorsHeaders();
-
-session_start();
+startSecureSession();
 
 // Check authentication
 if (!isset($_SESSION['admin_id']) || !isset($_SESSION['admin_logged_in'])) {
@@ -23,8 +22,8 @@ try {
         case 'dashboard':
             $stats = [];
 
-            $tours = $db->fetchOne("SELECT COUNT(*) as count FROM tours WHERE status = 'active'");
-            $stats['total_tours'] = $tours['count'] ?? 0;
+            $packageTours = $db->fetchOne("SELECT COUNT(*) as count FROM package_tours WHERE status = 'active'");
+            $stats['total_package_tours'] = $packageTours['count'] ?? 0;
 
             $hotels = $db->fetchOne("SELECT COUNT(*) as count FROM hotels WHERE status = 'active'");
             $stats['total_hotels'] = $hotels['count'] ?? 0;
@@ -57,7 +56,7 @@ try {
             $recentBookings = $db->fetchAll(
                 "SELECT b.*,
                  CASE
-                    WHEN b.service_type = 'tour' THEN (SELECT name_en FROM tours WHERE id = b.service_id)
+                    WHEN b.service_type = 'package_tour' THEN (SELECT name_en FROM package_tours WHERE id = b.service_id)
                     WHEN b.service_type = 'hotel' THEN (SELECT name_en FROM hotels WHERE id = b.service_id)
                     WHEN b.service_type = 'transfer' THEN (SELECT name_en FROM transfers WHERE id = b.service_id)
                  END as service_name
@@ -76,7 +75,7 @@ try {
 
             $sql = "SELECT b.*,
                     CASE
-                        WHEN b.service_type = 'tour' THEN (SELECT name_en FROM tours WHERE id = b.service_id)
+                        WHEN b.service_type = 'package_tour' THEN (SELECT name_en FROM package_tours WHERE id = b.service_id)
                         WHEN b.service_type = 'hotel' THEN (SELECT name_en FROM hotels WHERE id = b.service_id)
                         WHEN b.service_type = 'transfer' THEN (SELECT name_en FROM transfers WHERE id = b.service_id)
                     END as service_name
@@ -131,9 +130,9 @@ try {
             successResponse($contacts);
             break;
 
-        case 'tours':
-            $tours = $db->fetchAll("SELECT * FROM tours ORDER BY created_at DESC");
-            successResponse($tours);
+        case 'package_tours':
+            $packageTours = $db->fetchAll("SELECT * FROM package_tours ORDER BY created_at DESC");
+            successResponse($packageTours);
             break;
 
         case 'hotels':

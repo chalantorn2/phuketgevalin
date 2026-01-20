@@ -30,7 +30,7 @@ const Services: React.FC = () => {
   ];
 
   return (
-    <section className="py-24 bg-white relative">
+    <section id="services" className="py-24 bg-white relative">
       <div className="container mx-auto px-6 relative z-10">
         
         {/* Header */}

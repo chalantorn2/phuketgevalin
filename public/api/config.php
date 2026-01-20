@@ -24,6 +24,23 @@ define('API_URL', SITE_URL . '/api');
 date_default_timezone_set('Asia/Bangkok');
 
 /**
+ * Start session with cross-origin support
+ */
+function startSecureSession(): void {
+    if (session_status() === PHP_SESSION_NONE) {
+        session_set_cookie_params([
+            'lifetime' => 86400, // 24 hours
+            'path' => '/',
+            'domain' => '',
+            'secure' => true,
+            'httponly' => true,
+            'samesite' => 'None'
+        ]);
+        session_start();
+    }
+}
+
+/**
  * Database Connection Class using PDO
  */
 class Database {

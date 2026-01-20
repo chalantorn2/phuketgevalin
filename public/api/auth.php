@@ -5,8 +5,7 @@
 
 require_once __DIR__ . '/config.php';
 setCorsHeaders();
-
-session_start();
+startSecureSession();
 
 $method = $_SERVER['REQUEST_METHOD'];
 $db = Database::getInstance();

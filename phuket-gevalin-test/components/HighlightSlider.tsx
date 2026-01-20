@@ -62,7 +62,7 @@ const HighlightSlider: React.FC = () => {
   }, [current]);
 
   return (
-    <section className="py-16 bg-gray-50">
+    <section id="packages" className="py-16 bg-gray-50">
       <div className="container mx-auto px-6">
         
         {/* Header - Centered as requested */}

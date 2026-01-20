@@ -5,9 +5,9 @@ SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
 
 -- --------------------------------------------------------
--- Tours Table
+-- Package Tours Table
 -- --------------------------------------------------------
-CREATE TABLE IF NOT EXISTS `tours` (
+CREATE TABLE IF NOT EXISTS `package_tours` (
     `id` INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     `name_th` VARCHAR(255) NOT NULL,
     `name_en` VARCHAR(255) NOT NULL,
@@ -17,9 +17,9 @@ CREATE TABLE IF NOT EXISTS `tours` (
     `category` VARCHAR(100) NOT NULL COMMENT 'island, adventure, cultural, etc.',
     `image` VARCHAR(500) DEFAULT NULL,
     `duration` VARCHAR(100) DEFAULT NULL COMMENT 'e.g. Full Day, Half Day',
-    `includes` TEXT COMMENT 'What is included in the tour',
-    `highlights` TEXT COMMENT 'Tour highlights',
-    `itinerary` TEXT COMMENT 'Tour schedule',
+    `includes` TEXT COMMENT 'What is included in the package tour',
+    `highlights` TEXT COMMENT 'Package tour highlights',
+    `itinerary` TEXT COMMENT 'Package tour schedule',
     `status` ENUM('active', 'inactive') DEFAULT 'active',
     `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
     `updated_at` DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
@@ -76,7 +76,7 @@ CREATE TABLE IF NOT EXISTS `transfers` (
 CREATE TABLE IF NOT EXISTS `bookings` (
     `id` INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     `reference_code` VARCHAR(20) NOT NULL UNIQUE,
-    `service_type` ENUM('tour', 'hotel', 'transfer') NOT NULL,
+    `service_type` ENUM('package_tour', 'hotel', 'transfer') NOT NULL,
     `service_id` INT UNSIGNED NOT NULL,
     `customer_name` VARCHAR(255) NOT NULL,
     `customer_email` VARCHAR(255) NOT NULL,
@@ -149,11 +149,11 @@ SET FOREIGN_KEY_CHECKS = 1;
 -- --------------------------------------------------------
 
 /*
--- Sample Tours
-INSERT INTO `tours` (`name_th`, `name_en`, `description_th`, `description_en`, `price`, `category`, `duration`) VALUES
-('ทัวร์เกาะพีพี', 'Phi Phi Island Tour', 'เที่ยวเกาะพีพี ดำน้ำดูปะการัง', 'Visit Phi Phi Island, snorkeling and beach activities', 1500.00, 'island', 'Full Day'),
-('ทัวร์เกาะเจมส์บอนด์', 'James Bond Island Tour', 'ล่องเรือชมเกาะเจมส์บอนด์', 'Cruise to famous James Bond Island', 1800.00, 'island', 'Full Day'),
-('ทัวร์ภูเก็ตซิตี้', 'Phuket City Tour', 'เที่ยวชมเมืองเก่าภูเก็ต วัดฉลอง', 'Explore Old Town Phuket and Chalong Temple', 800.00, 'cultural', 'Half Day');
+-- Sample Package Tours
+INSERT INTO `package_tours` (`name_th`, `name_en`, `description_th`, `description_en`, `price`, `category`, `duration`) VALUES
+('ทัวร์ญี่ปุ่น โตเกียว 5 วัน', 'Japan Tokyo 5D4N', 'ทัวร์ญี่ปุ่นครบวงจร รวมตั๋วเครื่องบินและที่พัก', 'Complete Japan tour package with flights and accommodation', 29900.00, 'package', '5 Days 4 Nights'),
+('ทัวร์เกาหลี โซล 4 วัน', 'Korea Seoul 4D3N', 'ทัวร์เกาหลีสุดคุ้ม พร้อมไกด์นำเที่ยว', 'Value Korea tour with professional guide', 19900.00, 'package', '4 Days 3 Nights'),
+('ทัวร์สิงคโปร์ 3 วัน', 'Singapore 3D2N', 'เที่ยวสิงคโปร์ครบทุกไฮไลท์', 'Visit all Singapore highlights', 12900.00, 'package', '3 Days 2 Nights');
 
 -- Sample Transfers
 INSERT INTO `transfers` (`name_th`, `name_en`, `type`, `price`, `vehicle_type`, `max_passengers`) VALUES

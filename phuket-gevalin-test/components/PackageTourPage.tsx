@@ -2,7 +2,11 @@ import React, { useState } from 'react';
 import { MapPin, Calendar, Clock, Star, Check, Plane, Filter, Search, RotateCcw, ArrowRight, Globe } from 'lucide-react';
 import Button from './Button';
 
-const PackageTourPage: React.FC = () => {
+interface PackageTourPageProps {
+  onSelectPackage?: (id: number) => void;
+}
+
+const PackageTourPage: React.FC<PackageTourPageProps> = ({ onSelectPackage }) => {
   // Filter States
   const [activeZone, setActiveZone] = useState("ทั้งหมด");
   const [activeDuration, setActiveDuration] = useState("ทั้งหมด");
@@ -266,7 +270,11 @@ const PackageTourPage: React.FC = () => {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {filteredPackages.map((pkg) => (
-                        <div key={pkg.id} className="group bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl hover:shadow-brand-500/10 transition-all duration-500 flex flex-col h-full hover:-translate-y-1 cursor-pointer">
+                        <div 
+                          key={pkg.id} 
+                          onClick={() => onSelectPackage?.(pkg.id)}
+                          className="group bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl hover:shadow-brand-500/10 transition-all duration-500 flex flex-col h-full hover:-translate-y-1 cursor-pointer"
+                        >
                             
                             {/* Image Area */}
                             <div className="relative h-60 overflow-hidden">

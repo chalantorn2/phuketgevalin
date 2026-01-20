@@ -10,14 +10,7 @@ export default defineConfig({
       '/api': {
         target: 'https://www.phuketgevalin.com',
         changeOrigin: true,
-        secure: true,
-        followRedirects: true,
-        configure: (proxy) => {
-          proxy.on('proxyRes', (proxyRes) => {
-            // ลบ redirect headers เพื่อไม่ให้ browser follow
-            delete proxyRes.headers['location'];
-          });
-        }
+        secure: true
       }
     }
   }

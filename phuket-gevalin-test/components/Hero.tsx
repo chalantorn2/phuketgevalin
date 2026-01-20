@@ -7,7 +7,7 @@ const Hero: React.FC = () => {
   const bgImage = "https://images.unsplash.com/photo-1506953823976-52e1fdc0149a?q=80&w=2000&auto=format&fit=crop"; 
 
   return (
-    <section className="relative w-full h-[110vh] flex items-center justify-center overflow-hidden">
+    <section id="home" className="relative w-full h-[110vh] flex items-center justify-center overflow-hidden">
       {/* Background Image with Zoom Effect */}
       <div className="absolute inset-0 z-0">
         <div 

@@ -6,6 +6,19 @@ export const transfer = {
       title: "บริการรถรับ-ส่ง ส่วนตัว",
       description: "สะดวก ปลอดภัย ราคามาตรฐาน",
     },
+    types: {
+      all: "ทั้งหมด",
+      airport: "รับ-ส่งสนามบิน",
+      private: "รถส่วนตัว",
+      hourly: "เช่ารายชั่วโมง",
+    },
+    pricePerTrip: "ราคา / เที่ยว",
+    pricePerHour: "ราคา / ชั่วโมง",
+    bookNow: "จองเลย",
+    empty: {
+      title: "ไม่พบบริการ",
+      description: "ไม่มีบริการในหมวดหมู่นี้",
+    },
     booking: {
       from: {
         label: "รับจาก (Pick-up)",
@@ -89,6 +102,19 @@ export const transfer = {
       badge: "Private Transfer",
       title: "Private Transfer Service",
       description: "Convenient, Safe, Standard Pricing",
+    },
+    types: {
+      all: "All",
+      airport: "Airport Transfer",
+      private: "Private Car",
+      hourly: "Hourly Rental",
+    },
+    pricePerTrip: "Price / Trip",
+    pricePerHour: "Price / Hour",
+    bookNow: "Book Now",
+    empty: {
+      title: "No Services Found",
+      description: "No services available in this category",
     },
     booking: {
       from: {
