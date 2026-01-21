@@ -85,7 +85,6 @@ export default function OneDayTripsSection() {
           <table className="w-full">
             <thead className="bg-gray-50">
               <tr>
-                <th className="text-left py-4 px-6 text-gray-600 font-medium">Order</th>
                 <th className="text-left py-4 px-6 text-gray-600 font-medium">Image</th>
                 <th className="text-left py-4 px-6 text-gray-600 font-medium">Title</th>
                 <th className="text-left py-4 px-6 text-gray-600 font-medium">Province</th>
@@ -99,11 +98,12 @@ export default function OneDayTripsSection() {
                 trips.map((trip) => (
                   <tr key={trip.id} className="border-b border-gray-100 hover:bg-gray-50">
                     <td className="py-4 px-6">
-                      <span className="bg-gray-100 px-2 py-1 rounded text-sm font-medium">{trip.sort_order}</span>
-                    </td>
-                    <td className="py-4 px-6">
-                      {trip.image && (
+                      {trip.image ? (
                         <img src={trip.image} alt={trip.title_en} className="w-20 h-12 object-cover rounded" />
+                      ) : (
+                        <div className="w-20 h-12 bg-gray-200 rounded flex items-center justify-center">
+                          <span className="text-gray-400 text-xs text-center leading-tight">รอรูปภาพ<br/>Awaiting Image</span>
+                        </div>
                       )}
                     </td>
                     <td className="py-4 px-6">
@@ -115,16 +115,16 @@ export default function OneDayTripsSection() {
                     <td className="py-4 px-6 capitalize">{trip.province_key}</td>
                     <td className="py-4 px-6">
                       <div>
-                        <div className="font-medium">฿{Number(trip.price).toLocaleString()}</div>
+                        <div className="font-medium">฿{Math.floor(Number(trip.price)).toLocaleString()}</div>
                         {trip.discount_price && (
-                          <div className="text-sm text-gray-400 line-through">฿{Number(trip.discount_price).toLocaleString()}</div>
+                          <div className="text-sm text-gray-400 line-through">฿{Math.floor(Number(trip.discount_price)).toLocaleString()}</div>
                         )}
                       </div>
                     </td>
                     <td className="py-4 px-6">
                       <button
                         onClick={() => handleToggleStatus(trip)}
-                        className={`px-2 py-1 rounded-full text-xs font-medium cursor-pointer ${
+                        className={`px-2 py-1 rounded-full text-xs font-medium ${
                           trip.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'
                         }`}
                       >
@@ -151,7 +151,7 @@ export default function OneDayTripsSection() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="7" className="py-12 text-center text-gray-500">
+                  <td colSpan="6" className="py-12 text-center text-gray-500">
                     No trips found. Click "Add Trip" to create one.
                   </td>
                 </tr>
@@ -164,37 +164,284 @@ export default function OneDayTripsSection() {
   );
 }
 
+// Reusable Dynamic List Input Component (outside form to prevent re-render focus loss)
+function DynamicListInput({ label, placeholder, color = 'blue', items = [], onAdd, onUpdate, onRemove }) {
+  const colorClasses = {
+    blue: { btn: 'bg-blue-500 hover:bg-blue-600', remove: 'text-blue-400 hover:text-red-500' },
+    orange: { btn: 'bg-orange-500 hover:bg-orange-600', remove: 'text-orange-400 hover:text-red-500' },
+  };
+  const colors = colorClasses[color] || colorClasses.blue;
+
+  return (
+    <div>
+      <div className="flex justify-between items-center mb-2">
+        <label className="block text-sm font-medium text-gray-700">{label}</label>
+        <button
+          type="button"
+          onClick={onAdd}
+          className={`${colors.btn} text-white px-2 py-1 rounded text-xs flex items-center gap-1`}
+        >
+          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+          </svg>
+          เพิ่ม
+        </button>
+      </div>
+      <div className="space-y-2">
+        {items.length === 0 ? (
+          <p className="text-sm text-gray-400 italic">ยังไม่มีรายการ คลิก "เพิ่ม" เพื่อเริ่มต้น</p>
+        ) : (
+          items.map((item, index) => (
+            <div key={index} className="flex gap-2 items-center">
+              <input
+                type="text"
+                value={item}
+                onChange={(e) => onUpdate(index, e.target.value)}
+                className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                placeholder={placeholder}
+              />
+              <button
+                type="button"
+                onClick={() => onRemove(index)}
+                className={`${colors.remove} p-1`}
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  );
+}
+
 // One Day Trip Form Component
 function OneDayTripForm({ trip, onClose, onSave }) {
+  // Parse JSON arrays from DB
+  const parseJsonArray = (value) => {
+    if (!value) return [];
+    if (Array.isArray(value)) return value;
+    try {
+      const parsed = JSON.parse(value);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  };
+
   const [formData, setFormData] = useState({
     title_th: trip?.title_th || '',
     title_en: trip?.title_en || '',
     description_th: trip?.description_th || '',
     description_en: trip?.description_en || '',
-    location_th: trip?.location_th || '',
-    location_en: trip?.location_en || '',
+    location_th: trip?.location_th || (trip ? '' : 'ภูเก็ต, ประเทศไทย'),
+    location_en: trip?.location_en || (trip ? '' : 'Phuket, Thailand'),
     province_key: trip?.province_key || 'phuket',
-    duration_th: trip?.duration_th || '',
-    duration_en: trip?.duration_en || '',
-    price: trip?.price || '',
-    discount_price: trip?.discount_price || '',
+    duration_th: trip?.duration_th || (trip ? '' : 'ทั้งวัน'),
+    duration_en: trip?.duration_en || (trip ? '' : 'Full Day'),
+    price: trip?.price ? Math.floor(Number(trip.price)) : '',
+    discount_price: trip?.discount_price ? Math.floor(Number(trip.discount_price)) : '',
     image: trip?.image || '',
+    gallery: parseJsonArray(trip?.gallery),
     rating: trip?.rating || 4.5,
     reviews: trip?.reviews || 0,
     bestseller: trip?.bestseller || 0,
-    sort_order: trip?.sort_order || 1,
+    tags_th: trip?.tags_th || '',
+    tags_en: trip?.tags_en || '',
+    highlights_th: parseJsonArray(trip?.highlights_th),
+    highlights_en: parseJsonArray(trip?.highlights_en),
+    itinerary: parseJsonArray(trip?.itinerary),
+    included_th: parseJsonArray(trip?.included_th),
+    included_en: parseJsonArray(trip?.included_en),
+    excluded_th: parseJsonArray(trip?.excluded_th),
+    excluded_en: parseJsonArray(trip?.excluded_en),
+    meeting_point_th: trip?.meeting_point_th || '',
+    meeting_point_en: trip?.meeting_point_en || '',
+    important_info_th: trip?.important_info_th || '',
+    important_info_en: trip?.important_info_en || '',
     status: trip?.status || 'active',
   });
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [activeTab, setActiveTab] = useState('basic');
+  const [draggedIndex, setDraggedIndex] = useState(null);
+
+  // Combine main image + gallery into single array (first = cover)
+  const allImages = [
+    ...(formData.image ? [formData.image] : []),
+    ...formData.gallery
+  ];
 
   const provinceOptions = [
-    { value: 'phuket', label: 'Phuket' },
-    { value: 'krabi', label: 'Krabi' },
-    { value: 'phangnga', label: 'Phang Nga' },
-    { value: 'suratthani', label: 'Surat Thani' },
-    { value: 'ayutthaya', label: 'Ayutthaya' },
-    { value: 'bangkok', label: 'Bangkok' },
+    { value: 'phuket', label: 'Phuket / ภูเก็ต' },
+    { value: 'krabi', label: 'Krabi / กระบี่' },
+    { value: 'phangnga', label: 'Phang Nga / พังงา' },
+    { value: 'suratthani', label: 'Surat Thani / สุราษฎร์ธานี' },
   ];
+
+  // Upload multiple images
+  const handleImagesUpload = async (e) => {
+    const files = Array.from(e.target.files);
+    if (!files.length) return;
+
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+    const validFiles = files.filter(file => {
+      if (!allowedTypes.includes(file.type)) {
+        alert(`Invalid file type: ${file.name}`);
+        return false;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        alert(`File too large: ${file.name}`);
+        return false;
+      }
+      return true;
+    });
+
+    if (!validFiles.length) return;
+    setUploading(true);
+
+    try {
+      const apiBase = window.location.hostname === 'localhost'
+        ? 'https://www.phuketgevalin.com/api'
+        : '/api';
+
+      const uploadedUrls = [];
+      for (const file of validFiles) {
+        const uploadFormData = new FormData();
+        uploadFormData.append('image', file);
+        uploadFormData.append('folder', 'oneday_trips');
+
+        const response = await fetch(`${apiBase}/upload`, {
+          method: 'POST',
+          credentials: 'include',
+          body: uploadFormData,
+        });
+
+        const text = await response.text();
+        const result = JSON.parse(text);
+        if (result.success) {
+          uploadedUrls.push(result.data.url);
+        } else {
+          alert('Upload failed: ' + result.message);
+        }
+      }
+
+      if (uploadedUrls.length > 0) {
+        setFormData(prev => {
+          const currentImages = [
+            ...(prev.image ? [prev.image] : []),
+            ...prev.gallery
+          ];
+          const newImages = [...currentImages, ...uploadedUrls];
+          return {
+            ...prev,
+            image: newImages[0] || '',
+            gallery: newImages.slice(1)
+          };
+        });
+      }
+    } catch (error) {
+      console.error('Upload error:', error);
+      alert('Failed to upload images');
+    } finally {
+      setUploading(false);
+      e.target.value = '';
+    }
+  };
+
+  const handleRemoveImage = (index) => {
+    setFormData(prev => {
+      const currentImages = [
+        ...(prev.image ? [prev.image] : []),
+        ...prev.gallery
+      ];
+      const newImages = currentImages.filter((_, i) => i !== index);
+      return {
+        ...prev,
+        image: newImages[0] || '',
+        gallery: newImages.slice(1)
+      };
+    });
+  };
+
+  // Drag and drop handlers
+  const handleDragStart = (index) => {
+    setDraggedIndex(index);
+  };
+
+  const handleDragOver = (e, index) => {
+    e.preventDefault();
+    if (draggedIndex === null || draggedIndex === index) return;
+
+    setFormData(prev => {
+      const currentImages = [
+        ...(prev.image ? [prev.image] : []),
+        ...prev.gallery
+      ];
+      const newImages = [...currentImages];
+      const draggedItem = newImages[draggedIndex];
+      newImages.splice(draggedIndex, 1);
+      newImages.splice(index, 0, draggedItem);
+      setDraggedIndex(index);
+      return {
+        ...prev,
+        image: newImages[0] || '',
+        gallery: newImages.slice(1)
+      };
+    });
+  };
+
+  const handleDragEnd = () => {
+    setDraggedIndex(null);
+  };
+
+  // Itinerary management
+  const addItineraryItem = () => {
+    setFormData(prev => ({
+      ...prev,
+      itinerary: [...prev.itinerary, { time: '', title_th: '', title_en: '', description_th: '', description_en: '' }]
+    }));
+  };
+
+  const updateItineraryItem = (index, field, value) => {
+    setFormData(prev => ({
+      ...prev,
+      itinerary: prev.itinerary.map((item, i) =>
+        i === index ? { ...item, [field]: value } : item
+      )
+    }));
+  };
+
+  const removeItineraryItem = (index) => {
+    setFormData(prev => ({
+      ...prev,
+      itinerary: prev.itinerary.filter((_, i) => i !== index)
+    }));
+  };
+
+  // Dynamic list helpers
+  const addListItem = (field) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: [...(prev[field] || []), '']
+    }));
+  };
+
+  const updateListItem = (field, index, value) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: prev[field].map((item, i) => i === index ? value : item)
+    }));
+  };
+
+  const removeListItem = (field, index) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: prev[field].filter((_, i) => i !== index)
+    }));
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -221,9 +468,17 @@ function OneDayTripForm({ trip, onClose, onSave }) {
     }
   };
 
+  const tabs = [
+    { id: 'basic', label: 'Basic Info', labelTh: 'ข้อมูลพื้นฐาน' },
+    { id: 'content', label: 'Content', labelTh: 'เนื้อหา' },
+    { id: 'details', label: 'Tour Details', labelTh: 'รายละเอียด' },
+    { id: 'itinerary', label: 'Itinerary', labelTh: 'ตารางเดินทาง' },
+  ];
+
   return (
-    <div className="bg-white rounded-xl shadow-sm p-6">
-      <div className="flex justify-between items-center mb-6">
+    <div className="bg-white rounded-xl shadow-sm">
+      {/* Header */}
+      <div className="flex justify-between items-center p-4 border-b">
         <h4 className="text-lg font-semibold">{trip ? 'Edit Trip' : 'Add New Trip'}</h4>
         <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -232,190 +487,551 @@ function OneDayTripForm({ trip, onClose, onSave }) {
         </button>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Title (English) *</label>
-            <input
-              type="text"
-              value={formData.title_en}
-              onChange={(e) => setFormData({ ...formData, title_en: e.target.value })}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2"
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Title (Thai) *</label>
-            <input
-              type="text"
-              value={formData.title_th}
-              onChange={(e) => setFormData({ ...formData, title_th: e.target.value })}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2"
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Province *</label>
-            <select
-              value={formData.province_key}
-              onChange={(e) => setFormData({ ...formData, province_key: e.target.value })}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2"
+      {/* Tabs */}
+      <div className="border-b bg-gray-50">
+        <nav className="flex">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => setActiveTab(tab.id)}
+              className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${
+                activeTab === tab.id
+                  ? 'border-sky-500 text-sky-600 bg-white'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+              }`}
             >
-              {provinceOptions.map(opt => (
-                <option key={opt.value} value={opt.value}>{opt.label}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
-            <select
-              value={formData.status}
-              onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2"
-            >
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Location (English)</label>
-            <input
-              type="text"
-              value={formData.location_en}
-              onChange={(e) => setFormData({ ...formData, location_en: e.target.value })}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2"
-              placeholder="e.g. Phuket, Thailand"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Location (Thai)</label>
-            <input
-              type="text"
-              value={formData.location_th}
-              onChange={(e) => setFormData({ ...formData, location_th: e.target.value })}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2"
-              placeholder="เช่น ภูเก็ต, ประเทศไทย"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Duration (English)</label>
-            <input
-              type="text"
-              value={formData.duration_en}
-              onChange={(e) => setFormData({ ...formData, duration_en: e.target.value })}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2"
-              placeholder="e.g. Full Day (8 hours)"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Duration (Thai)</label>
-            <input
-              type="text"
-              value={formData.duration_th}
-              onChange={(e) => setFormData({ ...formData, duration_th: e.target.value })}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2"
-              placeholder="เช่น ทั้งวัน (8 ชั่วโมง)"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Price (THB) *</label>
-            <input
-              type="number"
-              value={formData.price}
-              onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2"
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Original Price (Before Discount)</label>
-            <input
-              type="number"
-              value={formData.discount_price}
-              onChange={(e) => setFormData({ ...formData, discount_price: e.target.value })}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2"
-              placeholder="Leave empty if no discount"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Rating</label>
-            <input
-              type="number"
-              step="0.1"
-              min="0"
-              max="5"
-              value={formData.rating}
-              onChange={(e) => setFormData({ ...formData, rating: e.target.value })}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Reviews Count</label>
-            <input
-              type="number"
-              value={formData.reviews}
-              onChange={(e) => setFormData({ ...formData, reviews: e.target.value })}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Sort Order</label>
-            <input
-              type="number"
-              value={formData.sort_order}
-              onChange={(e) => setFormData({ ...formData, sort_order: e.target.value })}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2"
-              min="1"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Bestseller</label>
-            <select
-              value={formData.bestseller}
-              onChange={(e) => setFormData({ ...formData, bestseller: parseInt(e.target.value) })}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2"
-            >
-              <option value={0}>No</option>
-              <option value={1}>Yes</option>
-            </select>
-          </div>
-          <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Image URL</label>
-            <input
-              type="text"
-              value={formData.image}
-              onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2"
-              placeholder="https://..."
-            />
-            {formData.image && (
-              <img src={formData.image} alt="Preview" className="mt-2 w-40 h-24 object-cover rounded" />
-            )}
-          </div>
+              <span className="hidden sm:inline">{tab.label}</span>
+              <span className="sm:hidden">{tab.labelTh}</span>
+            </button>
+          ))}
+        </nav>
+      </div>
+
+      <form onSubmit={handleSubmit}>
+        <div className="p-6">
+          {/* Tab 1: Basic Info */}
+          {activeTab === 'basic' && (
+            <div className="space-y-4">
+              {/* Images */}
+              <div className="bg-white rounded-lg p-4 border border-gray-200 shadow-sm">
+                <h5 className="font-medium text-gray-800 mb-1">Images / รูปภาพ</h5>
+                <p className="text-xs text-gray-500 mb-4">Upload multiple images. First image = Cover. Drag to reorder.</p>
+
+                {/* Upload Input */}
+                <div className="flex items-center gap-3 mb-4">
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp,image/gif"
+                    multiple
+                    onChange={handleImagesUpload}
+                    disabled={uploading}
+                    className="border border-gray-300 rounded-lg px-3 py-2 bg-white text-sm file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:bg-sky-500 file:text-white file:cursor-pointer hover:file:bg-sky-600"
+                  />
+                  {uploading && (
+                    <div className="flex items-center gap-2 text-sky-600">
+                      <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      <span className="text-sm">Uploading...</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Images Grid */}
+                <div className="flex flex-wrap gap-3">
+                  {allImages.map((url, index) => (
+                    <div
+                      key={url}
+                      draggable
+                      onDragStart={() => handleDragStart(index)}
+                      onDragOver={(e) => handleDragOver(e, index)}
+                      onDragEnd={handleDragEnd}
+                      className={`relative group cursor-move ${draggedIndex === index ? 'opacity-50' : ''}`}
+                    >
+                      <img
+                        src={url}
+                        alt={`Image ${index + 1}`}
+                        className={`w-24 h-16 object-cover rounded-lg border-2 ${index === 0 ? 'border-sky-500' : 'border-gray-200'}`}
+                      />
+                      {index === 0 && (
+                        <span className="absolute -top-2 -left-2 bg-sky-500 text-white text-xs px-1.5 py-0.5 rounded font-medium">
+                          Cover
+                        </span>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveImage(index)}
+                        className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center hover:bg-red-600 opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                      <div className="absolute bottom-0.5 right-0.5 bg-black/50 text-white text-xs px-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">
+                        {index + 1}
+                      </div>
+                    </div>
+                  ))}
+                  {allImages.length === 0 && (
+                    <p className="text-sm text-gray-400">No images yet</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Pricing */}
+              <div className="bg-white rounded-lg p-4 border border-gray-200 shadow-sm">
+                <h5 className="font-medium text-gray-800 mb-3">Pricing / ราคา</h5>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Price (THB) *</label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">฿</span>
+                      <input
+                        type="number"
+                        value={formData.price}
+                        onChange={(e) => setFormData({ ...formData, price: e.target.value ? Math.floor(Number(e.target.value)) : '' })}
+                        onWheel={(e) => e.target.blur()}
+                        className="w-full border border-gray-300 rounded-lg pl-8 pr-3 py-2 bg-white"
+                        required
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Original Price (for discount)</label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">฿</span>
+                      <input
+                        type="number"
+                        value={formData.discount_price}
+                        onChange={(e) => setFormData({ ...formData, discount_price: e.target.value ? Math.floor(Number(e.target.value)) : '' })}
+                        onWheel={(e) => e.target.blur()}
+                        className="w-full border border-gray-300 rounded-lg pl-8 pr-3 py-2 bg-white"
+                        placeholder="Leave empty if no discount"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Settings */}
+              <div className="bg-white rounded-lg p-4 border border-gray-200 shadow-sm">
+                <h5 className="font-medium text-gray-800 mb-3">Settings / การตั้งค่า</h5>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Province</label>
+                    <select
+                      value={formData.province_key}
+                      onChange={(e) => setFormData({ ...formData, province_key: e.target.value })}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white"
+                    >
+                      {provinceOptions.map(opt => (
+                        <option key={opt.value} value={opt.value}>{opt.label}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Rating</label>
+                    <input
+                      type="number"
+                      step="0.1"
+                      min="0"
+                      max="5"
+                      value={formData.rating}
+                      onChange={(e) => setFormData({ ...formData, rating: e.target.value })}
+                      onWheel={(e) => e.target.blur()}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Reviews</label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={formData.reviews}
+                      onChange={(e) => setFormData({ ...formData, reviews: e.target.value ? Math.floor(Number(e.target.value)) : 0 })}
+                      onWheel={(e) => e.target.blur()}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Bestseller</label>
+                    <select
+                      value={formData.bestseller}
+                      onChange={(e) => setFormData({ ...formData, bestseller: parseInt(e.target.value) })}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white"
+                    >
+                      <option value={0}>No</option>
+                      <option value={1}>Yes</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Tab 2: Content */}
+          {activeTab === 'content' && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              {/* English */}
+              <div className="bg-white rounded-lg p-4 border border-gray-200 shadow-sm space-y-4">
+                <h5 className="font-medium text-gray-800 pb-2 border-b flex items-center gap-2">
+                  <svg className="w-6 h-4 rounded shadow-sm flex-shrink-0" viewBox="0 0 28 20" fill="none">
+                    <rect width="28" height="20" fill="#012169" />
+                    <path d="M0 0L28 20M28 0L0 20" stroke="#fff" strokeWidth="3.5" />
+                    <path d="M0 0L28 20M28 0L0 20" stroke="#C8102E" strokeWidth="2" />
+                    <path d="M14 0V20M0 10H28" stroke="#fff" strokeWidth="6" />
+                    <path d="M14 0V20M0 10H28" stroke="#C8102E" strokeWidth="3.5" />
+                  </svg>
+                  English
+                </h5>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Title *</label>
+                  <input
+                    type="text"
+                    value={formData.title_en}
+                    onChange={(e) => setFormData({ ...formData, title_en: e.target.value })}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
+                  <input
+                    type="text"
+                    value={formData.location_en}
+                    onChange={(e) => setFormData({ ...formData, location_en: e.target.value })}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                    placeholder="e.g. Phuket, Thailand"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Duration</label>
+                  <input
+                    type="text"
+                    value={formData.duration_en}
+                    onChange={(e) => setFormData({ ...formData, duration_en: e.target.value })}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                    placeholder="e.g. Full Day (8 hours)"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                  <textarea
+                    value={formData.description_en}
+                    onChange={(e) => setFormData({ ...formData, description_en: e.target.value })}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                    rows="4"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Tags</label>
+                  <input
+                    type="text"
+                    value={formData.tags_en}
+                    onChange={(e) => setFormData({ ...formData, tags_en: e.target.value })}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                    placeholder="Snorkeling, Beach, Island"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Separate with commas</p>
+                </div>
+              </div>
+
+              {/* Thai */}
+              <div className="bg-white rounded-lg p-4 border border-gray-200 shadow-sm space-y-4">
+                <h5 className="font-medium text-gray-800 pb-2 border-b flex items-center gap-2">
+                  <svg className="w-6 h-4 rounded shadow-sm flex-shrink-0" viewBox="0 0 28 20" fill="none">
+                    <rect width="28" height="3.33" fill="#A51931" />
+                    <rect y="3.33" width="28" height="3.33" fill="#fff" />
+                    <rect y="6.66" width="28" height="6.67" fill="#2D2A4A" />
+                    <rect y="13.33" width="28" height="3.33" fill="#fff" />
+                    <rect y="16.66" width="28" height="3.34" fill="#A51931" />
+                  </svg>
+                  Thai
+                </h5>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Title *</label>
+                  <input
+                    type="text"
+                    value={formData.title_th}
+                    onChange={(e) => setFormData({ ...formData, title_th: e.target.value })}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
+                  <input
+                    type="text"
+                    value={formData.location_th}
+                    onChange={(e) => setFormData({ ...formData, location_th: e.target.value })}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                    placeholder="เช่น ภูเก็ต, ประเทศไทย"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Duration</label>
+                  <input
+                    type="text"
+                    value={formData.duration_th}
+                    onChange={(e) => setFormData({ ...formData, duration_th: e.target.value })}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                    placeholder="เช่น ทั้งวัน (8 ชั่วโมง)"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                  <textarea
+                    value={formData.description_th}
+                    onChange={(e) => setFormData({ ...formData, description_th: e.target.value })}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                    rows="4"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Tags</label>
+                  <input
+                    type="text"
+                    value={formData.tags_th}
+                    onChange={(e) => setFormData({ ...formData, tags_th: e.target.value })}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                    placeholder="ดำน้ำ, ชายหาด, เกาะ"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Separate with commas</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Tab 3: Tour Details */}
+          {activeTab === 'details' && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              {/* English */}
+              <div className="bg-white rounded-lg p-4 border border-gray-200 shadow-sm space-y-4">
+                <h5 className="font-medium text-gray-800 pb-2 border-b flex items-center gap-2">
+                  <svg className="w-6 h-4 rounded shadow-sm flex-shrink-0" viewBox="0 0 28 20" fill="none">
+                    <rect width="28" height="20" fill="#012169" />
+                    <path d="M0 0L28 20M28 0L0 20" stroke="#fff" strokeWidth="3.5" />
+                    <path d="M0 0L28 20M28 0L0 20" stroke="#C8102E" strokeWidth="2" />
+                    <path d="M14 0V20M0 10H28" stroke="#fff" strokeWidth="6" />
+                    <path d="M14 0V20M0 10H28" stroke="#C8102E" strokeWidth="3.5" />
+                  </svg>
+                  English
+                </h5>
+                <DynamicListInput
+                  label="Highlights"
+                  placeholder="Enter highlight"
+                  color="blue"
+                  items={formData.highlights_en}
+                  onAdd={() => addListItem('highlights_en')}
+                  onUpdate={(index, value) => updateListItem('highlights_en', index, value)}
+                  onRemove={(index) => removeListItem('highlights_en', index)}
+                />
+                <DynamicListInput
+                  label="What's Included"
+                  placeholder="Enter included item"
+                  color="blue"
+                  items={formData.included_en}
+                  onAdd={() => addListItem('included_en')}
+                  onUpdate={(index, value) => updateListItem('included_en', index, value)}
+                  onRemove={(index) => removeListItem('included_en', index)}
+                />
+                <DynamicListInput
+                  label="Not Included"
+                  placeholder="Enter excluded item"
+                  color="blue"
+                  items={formData.excluded_en}
+                  onAdd={() => addListItem('excluded_en')}
+                  onUpdate={(index, value) => updateListItem('excluded_en', index, value)}
+                  onRemove={(index) => removeListItem('excluded_en', index)}
+                />
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Meeting Point</label>
+                  <input
+                    type="text"
+                    value={formData.meeting_point_en}
+                    onChange={(e) => setFormData({ ...formData, meeting_point_en: e.target.value })}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                    placeholder="e.g. Hotel lobby pickup"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Important Information</label>
+                  <textarea
+                    value={formData.important_info_en}
+                    onChange={(e) => setFormData({ ...formData, important_info_en: e.target.value })}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                    rows="3"
+                    placeholder="Important notes for travelers"
+                  />
+                </div>
+              </div>
+
+              {/* Thai */}
+              <div className="bg-white rounded-lg p-4 border border-gray-200 shadow-sm space-y-4">
+                <h5 className="font-medium text-gray-800 pb-2 border-b flex items-center gap-2">
+                  <svg className="w-6 h-4 rounded shadow-sm flex-shrink-0" viewBox="0 0 28 20" fill="none">
+                    <rect width="28" height="3.33" fill="#A51931" />
+                    <rect y="3.33" width="28" height="3.33" fill="#fff" />
+                    <rect y="6.66" width="28" height="6.67" fill="#2D2A4A" />
+                    <rect y="13.33" width="28" height="3.33" fill="#fff" />
+                    <rect y="16.66" width="28" height="3.34" fill="#A51931" />
+                  </svg>
+                  Thai
+                </h5>
+                <DynamicListInput
+                  label="Highlights"
+                  placeholder="Enter highlight"
+                  color="orange"
+                  items={formData.highlights_th}
+                  onAdd={() => addListItem('highlights_th')}
+                  onUpdate={(index, value) => updateListItem('highlights_th', index, value)}
+                  onRemove={(index) => removeListItem('highlights_th', index)}
+                />
+                <DynamicListInput
+                  label="What's Included"
+                  placeholder="Enter included item"
+                  color="orange"
+                  items={formData.included_th}
+                  onAdd={() => addListItem('included_th')}
+                  onUpdate={(index, value) => updateListItem('included_th', index, value)}
+                  onRemove={(index) => removeListItem('included_th', index)}
+                />
+                <DynamicListInput
+                  label="Not Included"
+                  placeholder="Enter excluded item"
+                  color="orange"
+                  items={formData.excluded_th}
+                  onAdd={() => addListItem('excluded_th')}
+                  onUpdate={(index, value) => updateListItem('excluded_th', index, value)}
+                  onRemove={(index) => removeListItem('excluded_th', index)}
+                />
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Meeting Point</label>
+                  <input
+                    type="text"
+                    value={formData.meeting_point_th}
+                    onChange={(e) => setFormData({ ...formData, meeting_point_th: e.target.value })}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                    placeholder="เช่น รับที่ล็อบบี้โรงแรม"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Important Information</label>
+                  <textarea
+                    value={formData.important_info_th}
+                    onChange={(e) => setFormData({ ...formData, important_info_th: e.target.value })}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                    rows="3"
+                    placeholder="หมายเหตุสำคัญสำหรับนักท่องเที่ยว"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Tab 4: Itinerary */}
+          {activeTab === 'itinerary' && (
+            <div>
+              <div className="flex justify-between items-center mb-4">
+                <h5 className="font-medium text-gray-800">Itinerary / ตารางการเดินทาง</h5>
+                <button
+                  type="button"
+                  onClick={addItineraryItem}
+                  className="bg-sky-500 hover:bg-sky-600 text-white px-3 py-1.5 rounded-lg text-sm flex items-center gap-1"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  </svg>
+                  Add Item
+                </button>
+              </div>
+
+              {formData.itinerary.length === 0 ? (
+                <div className="text-center py-12 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200">
+                  <p className="text-gray-500">No itinerary items yet</p>
+                  <p className="text-sm text-gray-400 mt-1">Click "Add Item" to start</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {formData.itinerary.map((item, index) => (
+                    <div key={index} className="bg-white rounded-lg p-4 border border-gray-200 shadow-sm relative">
+                      <button
+                        type="button"
+                        onClick={() => removeItineraryItem(index)}
+                        className="absolute top-2 right-2 text-gray-400 hover:text-red-500"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                      <div className="grid grid-cols-1 md:grid-cols-5 gap-3 pr-6">
+                        <div>
+                          <label className="block text-xs font-medium text-gray-600 mb-1">Time</label>
+                          <input
+                            type="text"
+                            value={item.time}
+                            onChange={(e) => updateItineraryItem(index, 'time', e.target.value)}
+                            className="w-full border border-gray-300 rounded-lg px-2 py-1.5 text-sm"
+                            placeholder="08:00"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-gray-600 mb-1">Title (EN)</label>
+                          <input
+                            type="text"
+                            value={item.title_en}
+                            onChange={(e) => updateItineraryItem(index, 'title_en', e.target.value)}
+                            className="w-full border border-gray-300 rounded-lg px-2 py-1.5 text-sm"
+                            placeholder="Activity title"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-gray-600 mb-1">Title (TH)</label>
+                          <input
+                            type="text"
+                            value={item.title_th}
+                            onChange={(e) => updateItineraryItem(index, 'title_th', e.target.value)}
+                            className="w-full border border-gray-300 rounded-lg px-2 py-1.5 text-sm"
+                            placeholder="ชื่อกิจกรรม"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-gray-600 mb-1">Desc (EN)</label>
+                          <input
+                            type="text"
+                            value={item.description_en}
+                            onChange={(e) => updateItineraryItem(index, 'description_en', e.target.value)}
+                            className="w-full border border-gray-300 rounded-lg px-2 py-1.5 text-sm"
+                            placeholder="Details"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-gray-600 mb-1">Desc (TH)</label>
+                          <input
+                            type="text"
+                            value={item.description_th}
+                            onChange={(e) => updateItineraryItem(index, 'description_th', e.target.value)}
+                            className="w-full border border-gray-300 rounded-lg px-2 py-1.5 text-sm"
+                            placeholder="รายละเอียด"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Description (English)</label>
-          <textarea
-            value={formData.description_en}
-            onChange={(e) => setFormData({ ...formData, description_en: e.target.value })}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2"
-            rows="3"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Description (Thai)</label>
-          <textarea
-            value={formData.description_th}
-            onChange={(e) => setFormData({ ...formData, description_th: e.target.value })}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2"
-            rows="3"
-          />
-        </div>
-        <div className="flex gap-3 justify-end">
+
+        {/* Footer */}
+        <div className="flex gap-3 justify-end p-4 border-t bg-gray-50">
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+            className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100"
           >
             Cancel
           </button>

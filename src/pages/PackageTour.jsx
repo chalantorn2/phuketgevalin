@@ -46,14 +46,19 @@ export default function PackageTour({ onViewDetail }) {
     fetchPackageTours();
   }, []);
 
-  // Helper function to get localized text
+  // Helper function with fallback
+  const getLocalizedText = (thText, enText) => {
+    return language === "TH" ? (thText || enText) : (enText || thText);
+  };
+
+  // Helper function to get localized tour
   const getLocalizedTour = (tour) => {
     const highlights = tour.highlights ? tour.highlights.split(",").map(h => h.trim()) : [];
-    const duration = language === "th" ? tour.duration : tour.duration;
+    const duration = tour.duration || "";
 
     // Determine zone from includes/highlights
     let zone = "asia";
-    const text = (tour.name_en + tour.description_en).toLowerCase();
+    const text = ((tour.name_en || "") + (tour.description_en || "")).toLowerCase();
     if (text.includes("europe") || text.includes("italy") || text.includes("france") || text.includes("swiss")) {
       zone = "europe";
     } else if (text.includes("thailand") || text.includes("chiangmai") || text.includes("phuket")) {
@@ -70,8 +75,8 @@ export default function PackageTour({ onViewDetail }) {
 
     return {
       ...tour,
-      name: language === "th" ? tour.name_th : tour.name_en,
-      description: language === "th" ? tour.description_th : tour.description_en,
+      name: getLocalizedText(tour.name_th, tour.name_en),
+      description: getLocalizedText(tour.description_th, tour.description_en),
       price: Number(tour.price),
       discountPrice: Math.round(Number(tour.price) * 1.2),
       highlights,

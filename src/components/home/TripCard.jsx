@@ -1,5 +1,6 @@
 import { MapPin, Clock, Star, Heart } from 'lucide-react';
 import Button from '../ui/Button';
+import { useLanguage } from '../../context/LanguageContext';
 
 export default function TripCard({
   image,
@@ -11,6 +12,8 @@ export default function TripCard({
   price,
   discountPrice
 }) {
+  const { t } = useLanguage();
+
   return (
     <div className="group bg-white rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl hover:shadow-primary-500/20 transition-all duration-500 border border-gray-100 relative cursor-pointer transform hover:-translate-y-1">
       <div className="relative h-72 overflow-hidden">
@@ -21,7 +24,7 @@ export default function TripCard({
         />
         <div className="absolute top-4 left-4 bg-white/95 backdrop-blur-md px-3 py-1.5 rounded-full text-xs font-bold text-primary-600 uppercase tracking-wider shadow-sm flex items-center gap-1">
           <span className="w-1.5 h-1.5 rounded-full bg-primary-500 animate-pulse"></span>
-          One Day Trip
+          {t('nav.oneDayTrip')}
         </div>
         <button className="absolute top-4 right-4 p-2.5 rounded-full bg-white/60 backdrop-blur-md text-white hover:bg-white hover:text-red-500 transition-all duration-300 hover:scale-110 shadow-sm">
           <Heart size={20} className="transition-transform group-active:scale-90" />
@@ -54,7 +57,7 @@ export default function TripCard({
 
         <div className="flex items-end justify-between pt-2">
           <div className="flex flex-col">
-            <span className="text-xs text-gray-400 font-medium mb-1">ราคาเริ่มต้น/ท่าน</span>
+            <span className="text-xs text-gray-400 font-medium mb-1">{t('featuredTrips.pricePerPerson')}</span>
             <div className="flex items-baseline gap-2">
               <span className="text-2xl font-bold text-primary-600">฿{price.toLocaleString()}</span>
               {discountPrice && (
@@ -63,7 +66,7 @@ export default function TripCard({
             </div>
           </div>
           <Button variant="outline" className="!rounded-xl !px-5 !py-2.5 hover:!bg-primary-500 hover:!text-white border-primary-200 !text-sm font-bold shadow-sm hover:shadow-primary-500/30">
-            จองเลย
+            {t('featuredTrips.bookNow')}
           </Button>
         </div>
       </div>

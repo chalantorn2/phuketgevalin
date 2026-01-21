@@ -62,3 +62,41 @@ body {
 .bg-gradient-accent {
   background: linear-gradient(to bottom right, var(--color-accent-500), var(--color-accent-800));
 }
+
+/* Clickable elements - pointer cursor */
+button,
+[role="button"],
+input[type="submit"],
+input[type="button"],
+input[type="file"],
+select,
+a,
+label[for],
+.clickable {
+  cursor: pointer;
+}
+
+button:disabled,
+input:disabled,
+select:disabled,
+.disabled {
+  cursor: not-allowed;
+}
+
+/* Fix textarea editing in forms */
+textarea {
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+  user-select: text;
+  pointer-events: auto;
+  resize: vertical;
+}
+
+input,
+textarea,
+select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}

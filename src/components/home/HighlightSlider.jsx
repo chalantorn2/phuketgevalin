@@ -75,15 +75,19 @@ export default function HighlightSlider() {
     fetchPromotions();
   }, []);
 
-  // Get localized content
+  // Get localized content with fallback
+  const getLocalizedText = (thText, enText) => {
+    return language === 'TH' ? (thText || enText) : (enText || thText);
+  };
+
   const slides = promotions.map((promo) => ({
     id: promo.id,
     image: promo.image,
-    subtitle: language === 'th' ? promo.subtitle_th : promo.subtitle_en,
-    title: language === 'th' ? promo.title_th : promo.title_en,
-    location: language === 'th' ? promo.location_th : promo.location_en,
+    subtitle: getLocalizedText(promo.subtitle_th, promo.subtitle_en),
+    title: getLocalizedText(promo.title_th, promo.title_en),
+    location: getLocalizedText(promo.location_th, promo.location_en),
     price: Number(promo.price).toLocaleString(),
-    desc: language === 'th' ? promo.description_th : promo.description_en,
+    desc: getLocalizedText(promo.description_th, promo.description_en),
     link: promo.link
   }));
 
@@ -118,7 +122,7 @@ export default function HighlightSlider() {
       <section className="pt-24 pb-16 md:pt-28 md:pb-20 bg-gray-50">
         <div className="container mx-auto px-6">
           <div className="w-full h-[550px] md:h-[650px] rounded-[2.5rem] bg-gray-200 animate-pulse flex items-center justify-center">
-            <div className="text-gray-400">Loading...</div>
+            <div className="text-gray-400">{t('loading')}</div>
           </div>
         </div>
       </section>
@@ -155,13 +159,21 @@ export default function HighlightSlider() {
               }`}
             >
               <div className="absolute inset-0 overflow-hidden">
-                <img
-                  src={slide.image}
-                  alt={slide.title}
-                  className={`w-full h-full object-cover transition-transform duration-[6000ms] ease-out ${
-                    index === current ? 'scale-110' : 'scale-100'
-                  }`}
-                />
+                {slide.image ? (
+                  <img
+                    src={slide.image}
+                    alt={slide.title}
+                    className={`w-full h-full object-cover transition-transform duration-[6000ms] ease-out ${
+                      index === current ? 'scale-110' : 'scale-100'
+                    }`}
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-br from-sky-400 to-sky-600 flex items-center justify-center">
+                    <div className="text-white/60 text-center">
+                      <p className="text-2xl md:text-4xl font-medium">{t('awaitingImage')}</p>
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-90"></div>

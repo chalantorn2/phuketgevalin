@@ -1,6 +1,9 @@
 // ข้อความที่ใช้ร่วมกันทั้งเว็บ (Navigation, Footer, CTA)
 export const common = {
   TH: {
+    loading: "กำลังโหลด...",
+    awaitingImage: "รอรูปภาพ",
+    underDevelopment: "กำลังพัฒนา",
     nav: {
       home: "หน้าแรก",
       tourServices: "บริการทัวร์",
@@ -30,6 +33,9 @@ export const common = {
     },
   },
   EN: {
+    loading: "Loading...",
+    awaitingImage: "Awaiting Image",
+    underDevelopment: "Under Development",
     nav: {
       home: "Home",
       tourServices: "Tour Services",

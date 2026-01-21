@@ -2,11 +2,13 @@
 export const about = {
   TH: {
     hero: {
+      badge: "Phuket Gevalin Tour",
       title: "เกี่ยวกับเรา",
       subtitle: "ผู้ให้บริการด้านการท่องเที่ยวครบวงจรที่ภูเก็ต",
       description: "พร้อมมอบประสบการณ์ที่น่าประทับใจในทุกการเดินทาง",
     },
     company: {
+      badge: "เรื่องราวของเรา",
       title: "Phuket Gevalin",
       description1:
         "เราเป็นบริษัทที่ให้บริการด้านการท่องเที่ยวครบวงจร ตั้งอยู่ใจกลางเมืองภูเก็ต พร้อมมอบบริการทัวร์ รถรับ-ส่ง และที่พักโรงแรมคุณภาพ",
@@ -43,6 +45,7 @@ export const about = {
       partners: "พันธมิตรโรงแรม",
     },
     certifications: {
+      badge: "น่าเชื่อถือและได้รับการรับรอง",
       title: "เอกสารรับรองและใบอนุญาต",
       description:
         "เราเป็นบริษัทที่ได้รับการจดทะเบียนถูกต้องตามกฎหมาย และได้รับใบอนุญาตประกอบธุรกิจนำเที่ยวอย่างเป็นทางการ",
@@ -63,9 +66,11 @@ export const about = {
       },
     },
     contact: {
+      badge: "ติดต่อเรา",
       title: "ติดต่อเรา",
       infoTitle: "ข้อมูลติดต่อ",
       address: "ที่อยู่",
+      line: "ไลน์",
       addressValue:
         "20/15 หมู่ที่ 5 ซอยนากก ถนนเจ้าฟ้านอก ต.ฉลอง อ.เมืองภูเก็ต จ.ภูเก็ต 83130",
       phone: "โทรศัพท์",
@@ -85,12 +90,14 @@ export const about = {
   },
   EN: {
     hero: {
+      badge: "Phuket Gevalin Tour",
       title: "About Us",
       subtitle: "Your Complete Travel Service Provider in Phuket",
       description:
         "Delivering memorable experiences for every journey",
     },
     company: {
+      badge: "Our Story",
       title: "Phuket Gevalin",
       description1:
         "We are a full-service travel company located in the heart of Phuket, offering tours, transfers, and quality hotel accommodations.",
@@ -127,6 +134,7 @@ export const about = {
       partners: "Hotel Partners",
     },
     certifications: {
+      badge: "Trusted & Certified",
       title: "Certifications & Licenses",
       description:
         "We are a legally registered company with official tour operator licenses",
@@ -147,9 +155,11 @@ export const about = {
       },
     },
     contact: {
+      badge: "Get In Touch",
       title: "Contact Us",
       infoTitle: "Contact Information",
       address: "Address",
+      line: "LINE",
       addressValue:
         "20/15 Moo 5, Soi Nakok, Chaofah Nok Road, Chalong, Mueang Phuket, Phuket 83130",
       phone: "Phone",

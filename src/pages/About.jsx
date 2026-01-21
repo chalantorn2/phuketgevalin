@@ -25,7 +25,7 @@ export default function About() {
         </div>
         <div className="relative z-10 container mx-auto px-6 h-full flex flex-col justify-center items-center text-center pt-20">
           <span className="text-primary-300 font-bold tracking-[0.2em] uppercase text-sm mb-2">
-            Phuket Gevalin Tour
+            {t("about.hero.badge")}
           </span>
           <h1 className="text-4xl md:text-5xl font-bold text-white mb-4 drop-shadow-lg">
             {t("about.hero.title")}
@@ -41,7 +41,7 @@ export default function About() {
         <div className="grid md:grid-cols-2 gap-12 items-center mb-16">
           <div>
             <span className="text-primary-500 font-bold tracking-[0.15em] uppercase text-xs mb-4 block">
-              {t("about.company.badge") || "Our Story"}
+              {t("about.company.badge")}
             </span>
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
               {t("about.company.title")}
@@ -80,7 +80,7 @@ export default function About() {
         <div className="mb-16">
           <div className="text-center mb-10">
             <span className="text-primary-500 font-bold tracking-[0.15em] uppercase text-xs mb-2 block">
-              Trusted & Certified
+              {t("about.certifications.badge")}
             </span>
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
               {t("about.certifications.title")}
@@ -159,7 +159,7 @@ export default function About() {
           <div className="max-w-5xl mx-auto">
             <div className="text-center mb-10">
               <span className="text-primary-500 font-bold tracking-[0.15em] uppercase text-xs mb-2 block">
-                {t("about.contact.badge") || "Get In Touch"}
+                {t("about.contact.badge")}
               </span>
               <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
                 {t("about.contact.title")}
@@ -228,7 +228,7 @@ export default function About() {
                     </div>
                     <div>
                       <div className="font-semibold text-gray-900 text-sm mb-1">
-                        LINE
+                        {t("about.contact.line")}
                       </div>
                       <a
                         href="https://line.me/ti/p/"

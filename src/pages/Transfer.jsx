@@ -45,11 +45,16 @@ export default function Transfer() {
     fetchTransfers();
   }, []);
 
+  // Helper function with fallback
+  const getLocalizedText = (thText, enText) => {
+    return language === "TH" ? (thText || enText) : (enText || thText);
+  };
+
   // Helper function to get localized transfer
   const getLocalizedTransfer = (transfer) => ({
     ...transfer,
-    name: language === "th" ? transfer.name_th : transfer.name_en,
-    description: language === "th" ? transfer.description_th : transfer.description_en,
+    name: getLocalizedText(transfer.name_th, transfer.name_en),
+    description: getLocalizedText(transfer.description_th, transfer.description_en),
     price: Number(transfer.price),
     maxPassengers: Number(transfer.max_passengers),
   });

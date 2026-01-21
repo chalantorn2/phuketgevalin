@@ -69,6 +69,10 @@ switch ($path) {
         require_once __DIR__ . '/promotions.php';
         break;
 
+    case 'upload':
+        require_once __DIR__ . '/upload.php';
+        break;
+
     default:
         errorResponse('Endpoint not found', 404);
 }

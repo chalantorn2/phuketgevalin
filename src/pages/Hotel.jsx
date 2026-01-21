@@ -47,11 +47,16 @@ export default function Hotel({ onViewDetail }) {
   // Get unique locations from hotels
   const locations = ["all", ...new Set(hotels.map((h) => h.location))];
 
-  // Helper function to get localized text
+  // Helper function with fallback
+  const getLocalizedText = (thText, enText) => {
+    return language === "TH" ? (thText || enText) : (enText || thText);
+  };
+
+  // Helper function to get localized hotel
   const getLocalizedHotel = (hotel) => ({
     ...hotel,
-    name: language === "th" ? hotel.name_th : hotel.name_en,
-    description: language === "th" ? hotel.description_th : hotel.description_en,
+    name: getLocalizedText(hotel.name_th, hotel.name_en),
+    description: getLocalizedText(hotel.description_th, hotel.description_en),
     amenities: hotel.amenities ? hotel.amenities.split(",").map(a => a.trim()) : [],
     stars: Math.round(hotel.rating) || 4,
     price: Number(hotel.price_per_night),

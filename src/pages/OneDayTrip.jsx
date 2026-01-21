@@ -44,14 +44,19 @@ export default function OneDayTrip({ onViewDetail }) {
     }
   };
 
+  // Helper function with fallback
+  const getLocalizedText = (thText, enText) => {
+    return language === "TH" ? (thText || enText) : (enText || thText);
+  };
+
   // Get trip data with translated fields based on language
   const getLocalizedTrip = (trip) => ({
     ...trip,
-    title: language === "th" ? trip.title_th : trip.title_en,
-    description: language === "th" ? trip.description_th : trip.description_en,
-    location: language === "th" ? trip.location_th : trip.location_en,
-    duration: language === "th" ? trip.duration_th : trip.duration_en,
-    tags: language === "th" ? (trip.tags_th || []) : (trip.tags_en || []),
+    title: getLocalizedText(trip.title_th, trip.title_en),
+    description: getLocalizedText(trip.description_th, trip.description_en),
+    location: getLocalizedText(trip.location_th, trip.location_en),
+    duration: getLocalizedText(trip.duration_th, trip.duration_en),
+    tags: language === "TH" ? (trip.tags_th || trip.tags_en || []) : (trip.tags_en || trip.tags_th || []),
     provinceName: t(`oneDayTrip.provinces.${trip.province_key}`) || trip.province_key,
   });
 

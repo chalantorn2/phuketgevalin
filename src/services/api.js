@@ -49,9 +49,12 @@ async function fetchAPI(endpoint, options = {}) {
 // Package Tours API
 // ============================================
 export const packageToursAPI = {
-  getAll: (params = {}) => {
-    const query = new URLSearchParams(params).toString();
-    return fetchAPI(`package_tours${query ? `?${query}` : ''}`);
+  getAll: (showAll = false, category = null) => {
+    let query = showAll ? '?all=true' : '';
+    if (category && category !== 'all') {
+      query += (query ? '&' : '?') + `category=${category}`;
+    }
+    return fetchAPI(`package_tours${query}`);
   },
   getById: (id) => fetchAPI(`package_tours?id=${id}`),
   create: (data) => fetchAPI('package_tours', {

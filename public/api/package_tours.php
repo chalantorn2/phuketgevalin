@@ -1,6 +1,7 @@
 <?php
 /**
  * Package Tours API - Phuket Gevalin
+ * CRUD operations for Package Tours
  */
 
 require_once __DIR__ . '/config.php';
@@ -17,13 +18,20 @@ try {
             $showAll = isset($_GET['all']) && $_GET['all'] === 'true';
 
             if ($id) {
-                // Get single package tour
+                // Get single package tour with all details
                 $sql = $showAll
                     ? "SELECT * FROM package_tours WHERE id = ?"
                     : "SELECT * FROM package_tours WHERE id = ? AND status = 'active'";
                 $packageTour = $db->fetchOne($sql, [(int)$id]);
 
                 if ($packageTour) {
+                    // Parse JSON fields
+                    $jsonFields = ['gallery', 'itinerary', 'included', 'excluded'];
+                    foreach ($jsonFields as $field) {
+                        if (isset($packageTour[$field]) && is_string($packageTour[$field])) {
+                            $packageTour[$field] = json_decode($packageTour[$field], true);
+                        }
+                    }
                     successResponse($packageTour);
                 } else {
                     errorResponse('Package tour not found', 404);
@@ -31,7 +39,7 @@ try {
             } else {
                 // List all package tours with optional filters
                 $category = $_GET['category'] ?? null;
-                $limit = (int)($_GET['limit'] ?? 20);
+                $limit = (int)($_GET['limit'] ?? 50);
                 $offset = (int)($_GET['offset'] ?? 0);
 
                 $sql = "SELECT * FROM package_tours";
@@ -42,7 +50,7 @@ try {
                     $conditions[] = "status = 'active'";
                 }
 
-                if ($category) {
+                if ($category && $category !== 'all') {
                     $conditions[] = "category = ?";
                     $params[] = $category;
                 }
@@ -51,11 +59,21 @@ try {
                     $sql .= " WHERE " . implode(" AND ", $conditions);
                 }
 
-                $sql .= " ORDER BY created_at DESC LIMIT ? OFFSET ?";
+                $sql .= " ORDER BY id DESC LIMIT ? OFFSET ?";
                 $params[] = $limit;
                 $params[] = $offset;
 
                 $packageTours = $db->fetchAll($sql, $params);
+
+                // Parse JSON fields for each tour
+                $jsonFields = ['gallery', 'itinerary', 'included', 'excluded'];
+                foreach ($packageTours as &$tour) {
+                    foreach ($jsonFields as $field) {
+                        if (isset($tour[$field]) && is_string($tour[$field])) {
+                            $tour[$field] = json_decode($tour[$field], true);
+                        }
+                    }
+                }
 
                 // Get total count
                 $countSql = "SELECT COUNT(*) as total FROM package_tours";
@@ -65,7 +83,7 @@ try {
                 if (!$showAll) {
                     $countConditions[] = "status = 'active'";
                 }
-                if ($category) {
+                if ($category && $category !== 'all') {
                     $countConditions[] = "category = ?";
                     $countParams[] = $category;
                 }
@@ -87,25 +105,49 @@ try {
             // Create new package tour (admin only)
             $data = getJsonInput();
 
-            $required = ['name_th', 'name_en', 'price', 'category'];
+            $required = ['name_th', 'name_en', 'price'];
             foreach ($required as $field) {
-                if (empty($data[$field])) {
+                if (empty($data[$field]) && $data[$field] !== 0) {
                     errorResponse("Field '$field' is required");
                 }
             }
 
+            // Prepare JSON fields
+            $jsonFields = ['gallery', 'itinerary', 'included', 'excluded'];
+            foreach ($jsonFields as $field) {
+                if (isset($data[$field]) && is_array($data[$field])) {
+                    $data[$field] = json_encode($data[$field], JSON_UNESCAPED_UNICODE);
+                }
+            }
+
             $id = $db->insert(
-                "INSERT INTO package_tours (name_th, name_en, description_th, description_en, price, category, image, duration, status, created_at)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'active', NOW())",
+                "INSERT INTO package_tours (
+                    name_th, name_en, description_th, description_en,
+                    location, duration,
+                    price, discount_price,
+                    image, gallery, rating, reviews,
+                    highlights, itinerary, included, excluded,
+                    category, status, created_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())",
                 [
                     sanitize($data['name_th']),
                     sanitize($data['name_en']),
                     sanitize($data['description_th'] ?? ''),
                     sanitize($data['description_en'] ?? ''),
+                    sanitize($data['location'] ?? ''),
+                    sanitize($data['duration'] ?? ''),
                     (float)$data['price'],
-                    sanitize($data['category']),
+                    $data['discount_price'] ? (float)$data['discount_price'] : null,
                     sanitize($data['image'] ?? ''),
-                    sanitize($data['duration'] ?? '')
+                    $data['gallery'] ?? null,
+                    (float)($data['rating'] ?? 4.5),
+                    (int)($data['reviews'] ?? 0),
+                    sanitize($data['highlights'] ?? ''),
+                    $data['itinerary'] ?? null,
+                    $data['included'] ?? null,
+                    $data['excluded'] ?? null,
+                    sanitize($data['category'] ?? 'package'),
+                    $data['status'] ?? 'active'
                 ]
             );
 
@@ -121,31 +163,52 @@ try {
                 errorResponse('Package tour ID is required');
             }
 
+            // Build update query dynamically
+            $fields = [];
+            $params = [];
+
+            $allowedFields = [
+                'name_th', 'name_en', 'description_th', 'description_en',
+                'location', 'duration',
+                'price', 'discount_price',
+                'image', 'gallery', 'rating', 'reviews',
+                'highlights', 'itinerary', 'included', 'excluded',
+                'category', 'status'
+            ];
+
+            $jsonFields = ['gallery', 'itinerary', 'included', 'excluded'];
+            $numericFields = ['price', 'discount_price', 'rating', 'reviews'];
+
+            foreach ($allowedFields as $field) {
+                if (isset($data[$field])) {
+                    $fields[] = "$field = ?";
+
+                    if (in_array($field, $jsonFields) && is_array($data[$field])) {
+                        $params[] = json_encode($data[$field], JSON_UNESCAPED_UNICODE);
+                    } elseif (in_array($field, $numericFields)) {
+                        if ($field === 'discount_price' && empty($data[$field])) {
+                            $params[] = null;
+                        } elseif (in_array($field, ['price', 'rating', 'discount_price'])) {
+                            $params[] = (float)$data[$field];
+                        } else {
+                            $params[] = (int)$data[$field];
+                        }
+                    } else {
+                        $params[] = sanitize($data[$field]);
+                    }
+                }
+            }
+
+            if (empty($fields)) {
+                errorResponse('No fields to update');
+            }
+
+            $fields[] = "updated_at = NOW()";
+            $params[] = (int)$id;
+
             $db->execute(
-                "UPDATE package_tours SET
-                    name_th = COALESCE(?, name_th),
-                    name_en = COALESCE(?, name_en),
-                    description_th = COALESCE(?, description_th),
-                    description_en = COALESCE(?, description_en),
-                    price = COALESCE(?, price),
-                    category = COALESCE(?, category),
-                    image = COALESCE(?, image),
-                    duration = COALESCE(?, duration),
-                    status = COALESCE(?, status),
-                    updated_at = NOW()
-                 WHERE id = ?",
-                [
-                    $data['name_th'] ?? null,
-                    $data['name_en'] ?? null,
-                    $data['description_th'] ?? null,
-                    $data['description_en'] ?? null,
-                    $data['price'] ?? null,
-                    $data['category'] ?? null,
-                    $data['image'] ?? null,
-                    $data['duration'] ?? null,
-                    $data['status'] ?? null,
-                    (int)$id
-                ]
+                "UPDATE package_tours SET " . implode(', ', $fields) . " WHERE id = ?",
+                $params
             );
 
             successResponse(null, 'Package tour updated successfully');
@@ -154,17 +217,22 @@ try {
         case 'DELETE':
             // Soft delete package tour
             $id = $_GET['id'] ?? null;
+            $hardDelete = isset($_GET['hard']) && $_GET['hard'] === 'true';
 
             if (!$id) {
                 errorResponse('Package tour ID is required');
             }
 
-            $db->execute(
-                "UPDATE package_tours SET status = 'inactive', updated_at = NOW() WHERE id = ?",
-                [(int)$id]
-            );
-
-            successResponse(null, 'Package tour deleted successfully');
+            if ($hardDelete) {
+                $db->execute("DELETE FROM package_tours WHERE id = ?", [(int)$id]);
+                successResponse(null, 'Package tour permanently deleted');
+            } else {
+                $db->execute(
+                    "UPDATE package_tours SET status = 'inactive', updated_at = NOW() WHERE id = ?",
+                    [(int)$id]
+                );
+                successResponse(null, 'Package tour deleted successfully');
+            }
             break;
 
         default:

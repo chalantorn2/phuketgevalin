@@ -59,6 +59,15 @@ export const home = {
         linkText: "ค้นหาที่พัก",
       },
     },
+    featuredTrips: {
+      badge: "Recommended Trips",
+      title: "ทริปวันเดียว",
+      titleHighlight: "เที่ยวสุดคุ้ม",
+      description: "เวลาน้อยก็เที่ยวได้! รวมทริปไปเช้า-เย็นกลับยอดนิยม ที่จะทำให้วันหยุดสั้นๆ ของคุณพิเศษกว่าที่เคย",
+      viewAll: "ดูทริปทั้งหมด",
+      bookNow: "จองเลย",
+      pricePerPerson: "ราคาเริ่มต้น/ท่าน",
+    },
     highlight: {
       badge: "Special Offers",
       title: "โปรโมชั่นแนะนำ",
@@ -146,6 +155,15 @@ export const home = {
           "Quality hotel deals, great locations, reasonable prices with complete amenities",
         linkText: "Find Accommodation",
       },
+    },
+    featuredTrips: {
+      badge: "Recommended Trips",
+      title: "One Day Trip",
+      titleHighlight: "Best Value",
+      description: "Short on time? Popular day trips that will make your short holiday extra special",
+      viewAll: "View All Trips",
+      bookNow: "Book Now",
+      pricePerPerson: "Starting price/person",
     },
     highlight: {
       badge: "Special Offers",

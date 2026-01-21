@@ -54,7 +54,7 @@ export default function TourDetailPage({ tourId, onBack }) {
 
   // Get localized data based on language
   const getLocalizedText = (thText, enText) => {
-    return language === "th" ? (thText || enText) : (enText || thText);
+    return language === "TH" ? (thText || enText) : (enText || thText);
   };
 
   // Loading state
@@ -105,10 +105,10 @@ export default function TourDetailPage({ tourId, onBack }) {
   const description = getLocalizedText(tourData.description_th, tourData.description_en);
   const location = getLocalizedText(tourData.location_th, tourData.location_en);
   const duration = getLocalizedText(tourData.duration_th, tourData.duration_en);
-  const highlights = language === "th" ? (tourData.highlights_th || []) : (tourData.highlights_en || []);
+  const highlights = language === "TH" ? (tourData.highlights_th || []) : (tourData.highlights_en || []);
   const itinerary = tourData.itinerary || [];
-  const included = language === "th" ? (tourData.included_th || []) : (tourData.included_en || []);
-  const excluded = language === "th" ? (tourData.excluded_th || []) : (tourData.excluded_en || []);
+  const included = language === "TH" ? (tourData.included_th || []) : (tourData.included_en || []);
+  const excluded = language === "TH" ? (tourData.excluded_th || []) : (tourData.excluded_en || []);
   const importantInfo = getLocalizedText(tourData.important_info_th, tourData.important_info_en);
   const meetingPoint = getLocalizedText(tourData.meeting_point_th, tourData.meeting_point_en);
 
@@ -131,7 +131,7 @@ export default function TourDetailPage({ tourId, onBack }) {
           onClick={onBack}
           className="flex items-center gap-2 text-gray-500 hover:text-primary-600 transition-colors font-medium cursor-pointer"
         >
-          <ChevronLeft size={20} /> {language === "th" ? "ย้อนกลับไปหน้าค้นหา" : "Back to search"}
+          <ChevronLeft size={20} /> {language === "TH" ? "ย้อนกลับไปหน้าค้นหา" : "Back to search"}
         </button>
       </div>
 
@@ -149,7 +149,7 @@ export default function TourDetailPage({ tourId, onBack }) {
             <div className="flex items-center gap-1">
               <Star size={16} className="text-yellow-400 fill-yellow-400" />
               <span className="font-bold text-gray-900">{tourData.rating}</span>
-              <span>({tourData.reviews} {language === "th" ? "รีวิว" : "reviews"})</span>
+              <span>({tourData.reviews} {language === "TH" ? "รีวิว" : "reviews"})</span>
             </div>
             <div className="flex items-center gap-1">
               <Clock size={16} className="text-blue-500" />
@@ -191,7 +191,7 @@ export default function TourDetailPage({ tourId, onBack }) {
             />
             <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors flex items-center justify-center">
               <div className="bg-white/20 backdrop-blur-md border border-white/50 text-white px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2">
-                <Camera size={16} /> {language === "th" ? "ดูรูปทั้งหมด" : "View all photos"}
+                <Camera size={16} /> {language === "TH" ? "ดูรูปทั้งหมด" : "View all photos"}
               </div>
             </div>
           </div>
@@ -214,7 +214,7 @@ export default function TourDetailPage({ tourId, onBack }) {
             {description && (
               <section className="bg-white rounded-3xl p-6 md:p-8 border border-gray-100 shadow-sm">
                 <h2 className="text-xl font-bold text-gray-900 mb-4">
-                  {language === "th" ? "รายละเอียด" : "Description"}
+                  {language === "TH" ? "รายละเอียด" : "Description"}
                 </h2>
                 <p className="text-gray-600 leading-relaxed">{description}</p>
               </section>
@@ -225,7 +225,7 @@ export default function TourDetailPage({ tourId, onBack }) {
               <section className="bg-white rounded-3xl p-6 md:p-8 border border-gray-100 shadow-sm">
                 <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
                   <Star size={24} className="text-yellow-400 fill-yellow-400" />
-                  {language === "th" ? "ไฮไลท์ทัวร์นี้" : "Tour Highlights"}
+                  {language === "TH" ? "ไฮไลท์ทัวร์นี้" : "Tour Highlights"}
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {highlights.map((item, index) => (
@@ -249,7 +249,7 @@ export default function TourDetailPage({ tourId, onBack }) {
 
                 <h2 className="text-xl font-bold text-gray-900 mb-8 flex items-center gap-2">
                   <Clock size={24} className="text-primary-500" />
-                  {language === "th" ? "ตารางการเดินทาง" : "Itinerary"}
+                  {language === "TH" ? "ตารางการเดินทาง" : "Itinerary"}
                 </h2>
 
                 <div className="space-y-6">
@@ -291,7 +291,7 @@ export default function TourDetailPage({ tourId, onBack }) {
                 {included.length > 0 && (
                   <div className="bg-white rounded-3xl p-6 md:p-8 border border-gray-100 shadow-sm">
                     <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-                      <CheckCircle2 className="text-green-500" /> {language === "th" ? "สิ่งที่รวมในแพ็กเกจ" : "What's Included"}
+                      <CheckCircle2 className="text-green-500" /> {language === "TH" ? "สิ่งที่รวมในแพ็กเกจ" : "What's Included"}
                     </h3>
                     <ul className="space-y-3">
                       {included.map((item, i) => (
@@ -312,7 +312,7 @@ export default function TourDetailPage({ tourId, onBack }) {
                 {excluded.length > 0 && (
                   <div className="bg-white rounded-3xl p-6 md:p-8 border border-gray-100 shadow-sm">
                     <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-                      <XCircle className="text-red-400" /> {language === "th" ? "สิ่งที่ไม่รวม" : "Not Included"}
+                      <XCircle className="text-red-400" /> {language === "TH" ? "สิ่งที่ไม่รวม" : "Not Included"}
                     </h3>
                     <ul className="space-y-3">
                       {excluded.map((item, i) => (
@@ -338,7 +338,7 @@ export default function TourDetailPage({ tourId, onBack }) {
               <div className="bg-blue-50/50 rounded-2xl p-6 border border-blue-100 flex gap-4 items-start">
                 <MapPin className="text-blue-500 flex-shrink-0 mt-1" />
                 <div className="text-sm text-gray-600">
-                  <p className="font-bold text-gray-900 mb-1">{language === "th" ? "จุดนัดพบ" : "Meeting Point"}</p>
+                  <p className="font-bold text-gray-900 mb-1">{language === "TH" ? "จุดนัดพบ" : "Meeting Point"}</p>
                   <p>{meetingPoint}</p>
                 </div>
               </div>
@@ -349,7 +349,7 @@ export default function TourDetailPage({ tourId, onBack }) {
               <div className="bg-primary-50/50 rounded-2xl p-6 border border-primary-100 flex gap-4 items-start">
                 <Info className="text-primary-500 flex-shrink-0 mt-1" />
                 <div className="text-sm text-gray-600">
-                  <p className="font-bold text-gray-900 mb-1">{language === "th" ? "ข้อแนะนำเพิ่มเติม" : "Important Information"}</p>
+                  <p className="font-bold text-gray-900 mb-1">{language === "TH" ? "ข้อแนะนำเพิ่มเติม" : "Important Information"}</p>
                   <p>{importantInfo}</p>
                 </div>
               </div>
@@ -365,7 +365,7 @@ export default function TourDetailPage({ tourId, onBack }) {
               {/* Price Header */}
               <div className="flex flex-col mb-6 pb-6 border-b border-gray-100">
                 <span className="text-sm text-gray-400 font-medium mb-1">
-                  {language === "th" ? "ราคาเริ่มต้นต่อท่าน" : "Starting price per person"}
+                  {language === "TH" ? "ราคาเริ่มต้นต่อท่าน" : "Starting price per person"}
                 </span>
                 <div className="flex items-baseline gap-2">
                   <span className="text-3xl font-extrabold text-primary-600">
@@ -378,7 +378,7 @@ export default function TourDetailPage({ tourId, onBack }) {
                   )}
                 </div>
                 <div className="mt-2 inline-flex items-center gap-1 text-xs text-green-600 font-medium bg-green-50 px-2 py-1 rounded-md w-max">
-                  <ShieldCheck size={12} /> {language === "th" ? "การันตีราคาดีที่สุด" : "Best Price Guarantee"}
+                  <ShieldCheck size={12} /> {language === "TH" ? "การันตีราคาดีที่สุด" : "Best Price Guarantee"}
                 </div>
               </div>
 
@@ -386,7 +386,7 @@ export default function TourDetailPage({ tourId, onBack }) {
               <div className="space-y-4 mb-6">
                 <div>
                   <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">
-                    {language === "th" ? "วันที่เดินทาง" : "Travel Date"}
+                    {language === "TH" ? "วันที่เดินทาง" : "Travel Date"}
                   </label>
                   <div className="relative">
                     <Calendar
@@ -404,11 +404,11 @@ export default function TourDetailPage({ tourId, onBack }) {
 
                 <div>
                   <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">
-                    {language === "th" ? "จำนวนผู้เดินทาง" : "Number of Guests"}
+                    {language === "TH" ? "จำนวนผู้เดินทาง" : "Number of Guests"}
                   </label>
                   <div className="flex items-center justify-between bg-gray-50 border border-gray-200 rounded-xl p-3">
                     <span className="flex items-center gap-2 text-sm font-medium text-gray-700">
-                      <Users size={18} className="text-gray-400" /> {language === "th" ? "ผู้ใหญ่" : "Adults"}
+                      <Users size={18} className="text-gray-400" /> {language === "TH" ? "ผู้ใหญ่" : "Adults"}
                     </span>
                     <div className="flex items-center gap-3">
                       <button
@@ -435,7 +435,7 @@ export default function TourDetailPage({ tourId, onBack }) {
               {/* Total & Action */}
               <div className="bg-primary-50/50 rounded-xl p-4 mb-6 flex justify-between items-center">
                 <span className="text-sm font-bold text-gray-600">
-                  {language === "th" ? "ราคารวมสุทธิ" : "Total Price"}
+                  {language === "TH" ? "ราคารวมสุทธิ" : "Total Price"}
                 </span>
                 <span className="text-xl font-bold text-primary-700">
                   ฿{(Number(tourData.price) * guests).toLocaleString()}
@@ -445,10 +445,10 @@ export default function TourDetailPage({ tourId, onBack }) {
               <Button
                 className="w-full !py-3.5 !text-base shadow-lg shadow-primary-500/30 mb-3"
               >
-                {language === "th" ? "จองทันที" : "Book Now"}
+                {language === "TH" ? "จองทันที" : "Book Now"}
               </Button>
               <button className="w-full py-3 text-sm font-bold text-gray-500 hover:text-primary-600 transition-colors bg-transparent border border-gray-200 rounded-xl hover:border-primary-200 cursor-pointer">
-                {language === "th" ? "สอบถามข้อมูลเพิ่มเติม" : "Ask a Question"}
+                {language === "TH" ? "สอบถามข้อมูลเพิ่มเติม" : "Ask a Question"}
               </button>
             </div>
           </div>

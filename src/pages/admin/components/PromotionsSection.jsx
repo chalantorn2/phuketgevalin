@@ -101,8 +101,12 @@ export default function PromotionsSection() {
                       <span className="bg-gray-100 px-2 py-1 rounded text-sm font-medium">{promo.sort_order}</span>
                     </td>
                     <td className="py-4 px-6">
-                      {promo.image && (
+                      {promo.image ? (
                         <img src={promo.image} alt={promo.title_en} className="w-20 h-12 object-cover rounded" />
+                      ) : (
+                        <div className="w-20 h-12 bg-gray-200 rounded flex items-center justify-center">
+                          <span className="text-gray-400 text-xs text-center leading-tight">รอรูปภาพ<br/>Awaiting Image</span>
+                        </div>
                       )}
                     </td>
                     <td className="py-4 px-6">
@@ -111,7 +115,7 @@ export default function PromotionsSection() {
                         <div className="text-sm text-gray-500">{promo.title_th}</div>
                       </div>
                     </td>
-                    <td className="py-4 px-6">฿{Number(promo.price).toLocaleString()}</td>
+                    <td className="py-4 px-6">฿{Math.floor(Number(promo.price)).toLocaleString()}</td>
                     <td className="py-4 px-6">
                       <button
                         onClick={() => handleToggleStatus(promo)}
@@ -160,19 +164,85 @@ function PromotionForm({ promotion, onClose, onSave }) {
   const [formData, setFormData] = useState({
     title_th: promotion?.title_th || '',
     title_en: promotion?.title_en || '',
-    subtitle_th: promotion?.subtitle_th || '',
-    subtitle_en: promotion?.subtitle_en || '',
+    subtitle_th: promotion?.subtitle_th || (promotion ? '' : 'โปรโมชั่นพิเศษ'),
+    subtitle_en: promotion?.subtitle_en || (promotion ? '' : 'Special Offer'),
     description_th: promotion?.description_th || '',
     description_en: promotion?.description_en || '',
     location_th: promotion?.location_th || '',
     location_en: promotion?.location_en || '',
-    price: promotion?.price || '',
+    price: promotion?.price ? Math.floor(Number(promotion.price)) : '',
     image: promotion?.image || '',
     link: promotion?.link || '',
     sort_order: promotion?.sort_order || 1,
     status: promotion?.status || 'active',
   });
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [imagePreview, setImagePreview] = useState(promotion?.image || '');
+
+  const handleImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+    if (!allowedTypes.includes(file.type)) {
+      alert('Invalid file type. Allowed: JPG, PNG, WebP, GIF');
+      return;
+    }
+
+    // Validate file size (5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      alert('File size exceeds 5MB limit');
+      return;
+    }
+
+    setUploading(true);
+
+    try {
+      const formDataUpload = new FormData();
+      formDataUpload.append('image', file);
+      formDataUpload.append('folder', 'promotions');
+
+      const apiBase = window.location.hostname === 'localhost'
+        ? 'https://www.phuketgevalin.com/api'
+        : '/api';
+
+      const response = await fetch(`${apiBase}/upload`, {
+        method: 'POST',
+        credentials: 'include',
+        body: formDataUpload,
+      });
+
+      const text = await response.text();
+
+      let result;
+      try {
+        result = JSON.parse(text);
+      } catch (e) {
+        console.error('Server response:', text);
+        alert('Server error: Invalid response');
+        return;
+      }
+
+      if (result.success) {
+        setFormData({ ...formData, image: result.data.url });
+        setImagePreview(result.data.url);
+      } else {
+        alert(result.message || 'Upload failed');
+      }
+    } catch (error) {
+      console.error('Upload error:', error);
+      alert('Failed to upload image: ' + error.message);
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setFormData({ ...formData, image: '' });
+    setImagePreview('');
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -210,129 +280,185 @@ function PromotionForm({ promotion, onClose, onSave }) {
         </button>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Title (English) *</label>
-            <input
-              type="text"
-              value={formData.title_en}
-              onChange={(e) => setFormData({ ...formData, title_en: e.target.value })}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2"
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Title (Thai) *</label>
-            <input
-              type="text"
-              value={formData.title_th}
-              onChange={(e) => setFormData({ ...formData, title_th: e.target.value })}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2"
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Subtitle (English)</label>
-            <input
-              type="text"
-              value={formData.subtitle_en}
-              onChange={(e) => setFormData({ ...formData, subtitle_en: e.target.value })}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2"
-              placeholder="e.g. Special Offer, Best Seller"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Subtitle (Thai)</label>
-            <input
-              type="text"
-              value={formData.subtitle_th}
-              onChange={(e) => setFormData({ ...formData, subtitle_th: e.target.value })}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2"
-              placeholder="เช่น โปรโมชั่นพิเศษ, ขายดี"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Location (English)</label>
-            <input
-              type="text"
-              value={formData.location_en}
-              onChange={(e) => setFormData({ ...formData, location_en: e.target.value })}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2"
-              placeholder="e.g. Phuket, Thailand"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Location (Thai)</label>
-            <input
-              type="text"
-              value={formData.location_th}
-              onChange={(e) => setFormData({ ...formData, location_th: e.target.value })}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2"
-              placeholder="เช่น ภูเก็ต, ประเทศไทย"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Price (THB) *</label>
-            <input
-              type="number"
-              value={formData.price}
-              onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2"
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Sort Order</label>
-            <input
-              type="number"
-              value={formData.sort_order}
-              onChange={(e) => setFormData({ ...formData, sort_order: e.target.value })}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2"
-              min="1"
-            />
-          </div>
-          <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Image URL</label>
-            <input
-              type="text"
-              value={formData.image}
-              onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2"
-              placeholder="https://..."
-            />
-            {formData.image && (
-              <img src={formData.image} alt="Preview" className="mt-2 w-40 h-24 object-cover rounded" />
-            )}
-          </div>
-          <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Link (Optional)</label>
-            <input
-              type="text"
-              value={formData.link}
-              onChange={(e) => setFormData({ ...formData, link: e.target.value })}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2"
-              placeholder="Link to tour/service page"
-            />
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Image & General Settings */}
+        <div className="bg-gray-50 rounded-lg p-4">
+          <h5 className="font-medium text-gray-800 mb-4">Image & Settings</h5>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Image (1920x800 px)</label>
+              <div className="flex items-start gap-4">
+                <div className="flex-1">
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp,image/gif"
+                    onChange={handleImageUpload}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 bg-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-sky-50 file:text-sky-700 hover:file:bg-sky-100"
+                    disabled={uploading}
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Max 5MB. Formats: JPG, PNG, WebP, GIF</p>
+                </div>
+                {uploading && (
+                  <div className="flex items-center gap-2 text-sky-600">
+                    <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span className="text-sm">Uploading...</span>
+                  </div>
+                )}
+              </div>
+              <div className="mt-3 flex items-end gap-6">
+              {imagePreview ? (
+                <div className="relative inline-block">
+                  <img src={imagePreview} alt="Preview" className="w-48 h-28 object-cover rounded-lg border" />
+                  <button
+                    type="button"
+                    onClick={handleRemoveImage}
+                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+              ) : (
+                <div className="w-48 h-28 bg-gray-100 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center flex-shrink-0">
+                  <span className="text-gray-400 text-sm text-center">รอรูปภาพ<br/>Awaiting Image</span>
+                </div>
+              )}
+              <div className="flex-1 max-w-xs">
+                <label className="block text-sm font-medium text-gray-700 mb-1">ราคา / Price (THB) *</label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-medium">฿</span>
+                  <input
+                    type="number"
+                    value={formData.price}
+                    onChange={(e) => setFormData({ ...formData, price: e.target.value ? Math.floor(Number(e.target.value)) : '' })}
+                    onWheel={(e) => e.target.blur()}
+                    className="w-full border border-gray-300 rounded-lg pl-8 pr-3 py-2 text-lg font-semibold"
+                    step="1"
+                    min="0"
+                    required
+                  />
+                </div>
+              </div>
+            </div>
+            </div>
           </div>
         </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Description (English)</label>
-          <textarea
-            value={formData.description_en}
-            onChange={(e) => setFormData({ ...formData, description_en: e.target.value })}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2"
-            rows="2"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Description (Thai)</label>
-          <textarea
-            value={formData.description_th}
-            onChange={(e) => setFormData({ ...formData, description_th: e.target.value })}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2"
-            rows="2"
-          />
+
+        {/* Language Sections */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* English Section */}
+          <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
+            <h5 className="font-medium text-blue-800 mb-4 flex items-center gap-2">
+              <svg className="w-6 h-4 rounded shadow-sm" viewBox="0 0 28 20" fill="none">
+                <rect width="28" height="20" fill="#012169" />
+                <path d="M0 0L28 20M28 0L0 20" stroke="#fff" strokeWidth="3.5" />
+                <path d="M0 0L28 20M28 0L0 20" stroke="#C8102E" strokeWidth="2" />
+                <path d="M14 0V20M0 10H28" stroke="#fff" strokeWidth="6" />
+                <path d="M14 0V20M0 10H28" stroke="#C8102E" strokeWidth="3.5" />
+              </svg>
+              English
+            </h5>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Title *</label>
+                <input
+                  type="text"
+                  value={formData.title_en}
+                  onChange={(e) => setFormData({ ...formData, title_en: e.target.value })}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Subtitle</label>
+                <input
+                  type="text"
+                  value={formData.subtitle_en}
+                  onChange={(e) => setFormData({ ...formData, subtitle_en: e.target.value })}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                  placeholder="e.g. Special Offer, Best Seller"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
+                <input
+                  type="text"
+                  value={formData.location_en}
+                  onChange={(e) => setFormData({ ...formData, location_en: e.target.value })}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                  placeholder="e.g. Phuket, Thailand"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                <textarea
+                  value={formData.description_en}
+                  onChange={(e) => setFormData({ ...formData, description_en: e.target.value })}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                  rows="3"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Thai Section */}
+          <div className="bg-orange-50 rounded-lg p-4 border border-orange-200">
+            <h5 className="font-medium text-orange-800 mb-4 flex items-center gap-2">
+              <svg className="w-6 h-4 rounded shadow-sm" viewBox="0 0 28 20" fill="none">
+                <rect width="28" height="3.33" fill="#A51931" />
+                <rect y="3.33" width="28" height="3.33" fill="#fff" />
+                <rect y="6.66" width="28" height="6.67" fill="#2D2A4A" />
+                <rect y="13.33" width="28" height="3.33" fill="#fff" />
+                <rect y="16.66" width="28" height="3.34" fill="#A51931" />
+              </svg>
+              ภาษาไทย
+            </h5>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">ชื่อ *</label>
+                <input
+                  type="text"
+                  value={formData.title_th}
+                  onChange={(e) => setFormData({ ...formData, title_th: e.target.value })}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">คำบรรยายย่อย</label>
+                <input
+                  type="text"
+                  value={formData.subtitle_th}
+                  onChange={(e) => setFormData({ ...formData, subtitle_th: e.target.value })}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                  placeholder="เช่น โปรโมชั่นพิเศษ, ขายดี"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">สถานที่</label>
+                <input
+                  type="text"
+                  value={formData.location_th}
+                  onChange={(e) => setFormData({ ...formData, location_th: e.target.value })}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                  placeholder="เช่น ภูเก็ต, ประเทศไทย"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">รายละเอียด</label>
+                <textarea
+                  value={formData.description_th}
+                  onChange={(e) => setFormData({ ...formData, description_th: e.target.value })}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                  rows="3"
+                />
+              </div>
+            </div>
+          </div>
         </div>
         <div className="flex gap-3 justify-end">
           <button
