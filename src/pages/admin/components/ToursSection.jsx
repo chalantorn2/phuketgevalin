@@ -114,13 +114,13 @@ export default function ToursSection() {
                       <div className="flex gap-2">
                         <button
                           onClick={() => { setEditingTour(tour); setShowForm(true); }}
-                          className="text-sky-600 hover:text-sky-800"
+                          className="px-3 py-1.5 text-sm font-medium text-sky-700 bg-sky-50 border border-sky-200 rounded-lg hover:bg-sky-100 hover:border-sky-300 transition-colors"
                         >
                           Edit
                         </button>
                         <button
                           onClick={() => handleDelete(tour.id)}
-                          className="text-red-600 hover:text-red-800"
+                          className="px-3 py-1.5 text-sm font-medium text-red-700 bg-red-50 border border-red-200 rounded-lg hover:bg-red-100 hover:border-red-300 transition-colors"
                         >
                           Delete
                         </button>

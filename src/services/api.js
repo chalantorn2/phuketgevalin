@@ -3,10 +3,8 @@
  * เชื่อมต่อ React กับ Backend PHP
  */
 
-// API Base URL - ใช้ production URL สำหรับ development เพื่อหลีกเลี่ยงปัญหา proxy
-const API_BASE_URL = window.location.hostname === 'localhost'
-  ? 'https://www.phuketgevalin.com/api'
-  : '/api';
+// API Base URL - ใช้ relative path เพื่อให้ Vite proxy จัดการ CORS ให้
+const API_BASE_URL = '/api';
 
 /**
  * Generic fetch wrapper with error handling
@@ -93,6 +91,63 @@ export const hotelsAPI = {
 };
 
 // ============================================
+// Hotel Room Types API (ประเภทห้องพัก)
+// ============================================
+export const hotelRoomTypesAPI = {
+  getByHotel: (hotelId, showAll = false) => fetchAPI(`hotel_room_types?hotel_id=${hotelId}${showAll ? '&all=true' : ''}`),
+  getById: (id) => fetchAPI(`hotel_room_types?id=${id}`),
+  create: (data) => fetchAPI('hotel_room_types', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }),
+  update: (id, data) => fetchAPI(`hotel_room_types?id=${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  }),
+  delete: (id) => fetchAPI(`hotel_room_types?id=${id}`, {
+    method: 'DELETE',
+  }),
+};
+
+// ============================================
+// Hotel Periods API (ช่วงวันที่ราคา)
+// ============================================
+export const hotelPeriodsAPI = {
+  getByHotel: (hotelId, showAll = false) => fetchAPI(`hotel_periods?hotel_id=${hotelId}${showAll ? '&all=true' : ''}`),
+  getById: (id) => fetchAPI(`hotel_periods?id=${id}`),
+  create: (data) => fetchAPI('hotel_periods', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }),
+  update: (id, data) => fetchAPI(`hotel_periods?id=${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  }),
+  delete: (id) => fetchAPI(`hotel_periods?id=${id}`, {
+    method: 'DELETE',
+  }),
+};
+
+// ============================================
+// Hotel Room Prices API (ราคาห้องพัก)
+// ============================================
+export const hotelRoomPricesAPI = {
+  getByHotel: (hotelId) => fetchAPI(`hotel_room_prices?hotel_id=${hotelId}`),
+  getById: (id) => fetchAPI(`hotel_room_prices?id=${id}`),
+  create: (data) => fetchAPI('hotel_room_prices', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }),
+  update: (id, data) => fetchAPI(`hotel_room_prices?id=${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  }),
+  delete: (id) => fetchAPI(`hotel_room_prices?id=${id}`, {
+    method: 'DELETE',
+  }),
+};
+
+// ============================================
 // Transfers API
 // ============================================
 export const transfersAPI = {
@@ -110,6 +165,45 @@ export const transfersAPI = {
     body: JSON.stringify(data),
   }),
   delete: (id) => fetchAPI(`transfers?id=${id}`, {
+    method: 'DELETE',
+  }),
+};
+
+// ============================================
+// Transfer Locations API (สถานที่รับ-ส่ง)
+// ============================================
+export const transferLocationsAPI = {
+  getAll: (showAll = false) => fetchAPI(`transfer_locations${showAll ? '?all=true' : ''}`),
+  getById: (id) => fetchAPI(`transfer_locations?id=${id}`),
+  create: (data) => fetchAPI('transfer_locations', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }),
+  update: (id, data) => fetchAPI(`transfer_locations?id=${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  }),
+  delete: (id) => fetchAPI(`transfer_locations?id=${id}`, {
+    method: 'DELETE',
+  }),
+};
+
+// ============================================
+// Transfer Routes API (ราคาเส้นทาง)
+// ============================================
+export const transferRoutesAPI = {
+  getAll: (showAll = false) => fetchAPI(`transfer_routes${showAll ? '?all=true' : ''}`),
+  getById: (id) => fetchAPI(`transfer_routes?id=${id}`),
+  getByLocations: (fromId, toId) => fetchAPI(`transfer_routes?from=${fromId}&to=${toId}`),
+  create: (data) => fetchAPI('transfer_routes', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }),
+  update: (id, data) => fetchAPI(`transfer_routes?id=${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  }),
+  delete: (id) => fetchAPI(`transfer_routes?id=${id}`, {
     method: 'DELETE',
   }),
 };
@@ -234,6 +328,8 @@ export default {
   packageTours: packageToursAPI,
   hotels: hotelsAPI,
   transfers: transfersAPI,
+  transferLocations: transferLocationsAPI,
+  transferRoutes: transferRoutesAPI,
   bookings: bookingsAPI,
   contact: contactAPI,
   promotions: promotionsAPI,

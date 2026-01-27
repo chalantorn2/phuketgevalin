@@ -13,36 +13,43 @@ import {
   Timer,
 } from "lucide-react";
 import { useLanguage } from "../context/LanguageContext";
-import { transfersAPI } from "../services/api";
+import { transfersAPI, transferLocationsAPI, transferRoutesAPI } from "../services/api";
 
 export default function Transfer() {
   const { t, language } = useLanguage();
 
   const [from, setFrom] = useState(0);
   const [to, setTo] = useState(0);
-  const [price, setPrice] = useState(null);
+  const [routePrice, setRoutePrice] = useState(null);
 
   // Data from API
   const [transfers, setTransfers] = useState([]);
+  const [locations, setLocations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeType, setActiveType] = useState("all");
 
-  // Fetch transfers from API
+  // Fetch all data from API
   useEffect(() => {
-    const fetchTransfers = async () => {
+    const fetchData = async () => {
       setLoading(true);
       try {
-        const data = await transfersAPI.getAll();
-        if (data.success) {
-          setTransfers(data.data || []);
+        const [transfersData, locationsData] = await Promise.all([
+          transfersAPI.getAll(),
+          transferLocationsAPI.getAll()
+        ]);
+        if (transfersData.success) {
+          setTransfers(transfersData.data || []);
+        }
+        if (locationsData.success) {
+          setLocations(locationsData.data || []);
         }
       } catch (error) {
-        console.error("Failed to fetch transfers:", error);
+        console.error("Failed to fetch data:", error);
       } finally {
         setLoading(false);
       }
     };
-    fetchTransfers();
+    fetchData();
   }, []);
 
   // Helper function with fallback
@@ -68,60 +75,37 @@ export default function Transfer() {
   const transferTypes = ["all", "airport", "private", "hourly"];
 
   // Get translated data
-  const locations = t("transfer.locations");
   const valueProps = t("transfer.valueProps");
   const passengerOptions = t("transfer.booking.passengers.options");
 
-  // Simple pricing logic
+  // Helper function to get localized location name
+  const getLocationName = (location) => {
+    if (!location) return "";
+    return language === "TH" ? (location.name_th || location.name_en) : (location.name_en || location.name_th);
+  };
+
+  // Fetch route price when from/to changes
   useEffect(() => {
-    if (from === 0 || to === 0 || from === to) {
-      setPrice(null);
-      return;
-    }
+    const fetchRoutePrice = async () => {
+      if (from === 0 || to === 0 || from === to) {
+        setRoutePrice(null);
+        return;
+      }
 
-    const fromLoc = locations[from] || "";
-    const toLoc = locations[to] || "";
-
-    let basePrice = 0;
-    const isPhuket =
-      fromLoc.includes("ภูเก็ต") ||
-      fromLoc.includes("Phuket") ||
-      fromLoc.includes("ป่าตอง") ||
-      fromLoc.includes("Patong");
-    const isKrabi =
-      toLoc.includes("กระบี่") ||
-      toLoc.includes("Krabi") ||
-      toLoc.includes("อ่าวนาง") ||
-      toLoc.includes("Ao Nang");
-    const isPhuketToKrabi =
-      (isPhuket && isKrabi) ||
-      ((fromLoc.includes("กระบี่") ||
-        fromLoc.includes("Krabi") ||
-        fromLoc.includes("อ่าวนาง") ||
-        fromLoc.includes("Ao Nang")) &&
-        (toLoc.includes("ภูเก็ต") ||
-          toLoc.includes("Phuket") ||
-          toLoc.includes("ป่าตอง") ||
-          toLoc.includes("Patong")));
-
-    if (isPhuketToKrabi) {
-      basePrice = 2500;
-    } else if (
-      (fromLoc.includes("สนามบิน") || fromLoc.includes("Airport")) &&
-      (toLoc.includes("เมือง") || toLoc.includes("Town"))
-    ) {
-      basePrice = 800;
-    } else if (
-      (fromLoc.includes("เมือง") || fromLoc.includes("Town")) &&
-      (toLoc.includes("สนามบิน") || toLoc.includes("Airport"))
-    ) {
-      basePrice = 800;
-    } else {
-      basePrice = 1500;
-    }
-
-    setPrice(basePrice);
-  }, [from, to, locations]);
+      try {
+        const data = await transferRoutesAPI.getByLocations(from, to);
+        if (data.success && data.data) {
+          setRoutePrice(data.data);
+        } else {
+          setRoutePrice(null);
+        }
+      } catch (error) {
+        console.error("Failed to fetch route price:", error);
+        setRoutePrice(null);
+      }
+    };
+    fetchRoutePrice();
+  }, [from, to]);
 
   return (
     <div className="bg-gray-50 min-h-screen pb-24">
@@ -165,9 +149,10 @@ export default function Transfer() {
                     onChange={(e) => setFrom(Number(e.target.value))}
                     className="w-full bg-transparent outline-none text-gray-700 font-medium cursor-pointer"
                   >
-                    {locations.map((loc, index) => (
-                      <option key={index} value={index} disabled={index === to}>
-                        {loc}
+                    <option value={0}>{t("transfer.booking.from.placeholder")}</option>
+                    {locations.map((loc) => (
+                      <option key={loc.id} value={loc.id} disabled={loc.id === to}>
+                        {getLocationName(loc)}
                       </option>
                     ))}
                   </select>
@@ -186,13 +171,10 @@ export default function Transfer() {
                     onChange={(e) => setTo(Number(e.target.value))}
                     className="w-full bg-transparent outline-none text-gray-700 font-medium cursor-pointer"
                   >
-                    {locations.map((loc, index) => (
-                      <option
-                        key={index}
-                        value={index}
-                        disabled={index === from}
-                      >
-                        {loc}
+                    <option value={0}>{t("transfer.booking.to.placeholder")}</option>
+                    {locations.map((loc) => (
+                      <option key={loc.id} value={loc.id} disabled={loc.id === from}>
+                        {getLocationName(loc)}
                       </option>
                     ))}
                   </select>
@@ -222,7 +204,7 @@ export default function Transfer() {
             {/* Price Display */}
             <div
               className={`transition-all duration-500 overflow-hidden ${
-                price ? "max-h-40 opacity-100" : "max-h-0 opacity-0"
+                routePrice ? "max-h-40 opacity-100" : "max-h-0 opacity-0"
               }`}
             >
               <div className="bg-primary-50 rounded-xl p-4 flex flex-col md:flex-row items-center justify-between gap-4 border border-primary-100">
@@ -232,12 +214,17 @@ export default function Transfer() {
                   </p>
                   <div className="flex items-baseline gap-2 justify-center md:justify-start">
                     <span className="text-3xl font-bold text-primary-600">
-                      ฿{price?.toLocaleString()}
+                      ฿{routePrice ? Number(routePrice.price).toLocaleString() : 0}
                     </span>
                     <span className="text-xs text-gray-400">
                       {t("transfer.booking.price.perTrip")}
                     </span>
                   </div>
+                  {routePrice?.duration_minutes && (
+                    <p className="text-xs text-gray-500 mt-1">
+                      ~{routePrice.duration_minutes} {language === "TH" ? "นาที" : "min"}
+                    </p>
+                  )}
                 </div>
                 <button className="bg-primary-600 text-white px-8 py-3 rounded-lg font-bold shadow-lg shadow-primary-500/30 hover:bg-primary-700 hover:scale-105 transition-all duration-300 flex items-center gap-2 cursor-pointer">
                   {t("transfer.booking.bookButton")} <ArrowRight size={18} />
@@ -245,7 +232,13 @@ export default function Transfer() {
               </div>
             </div>
 
-            {!price && (
+            {!routePrice && from !== 0 && to !== 0 && from !== to && (
+              <div className="text-center text-orange-500 text-sm py-2 bg-orange-50 rounded-lg">
+                {language === "TH" ? "ไม่พบเส้นทางนี้ กรุณาติดต่อเรา" : "Route not available. Please contact us."}
+              </div>
+            )}
+
+            {(from === 0 || to === 0 || from === to) && (
               <div className="text-center text-gray-400 text-sm py-2">
                 {t("transfer.booking.selectRoute")}
               </div>

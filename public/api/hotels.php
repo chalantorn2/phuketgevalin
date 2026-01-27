@@ -22,6 +22,10 @@ try {
                 $hotel = $db->fetchOne($sql, [(int)$id]);
 
                 if ($hotel) {
+                    // Parse gallery JSON
+                    if (isset($hotel['gallery']) && is_string($hotel['gallery'])) {
+                        $hotel['gallery'] = json_decode($hotel['gallery'], true) ?: [];
+                    }
                     successResponse($hotel);
                 } else {
                     errorResponse('Hotel not found', 404);
@@ -48,11 +52,19 @@ try {
                     $sql .= " WHERE " . implode(" AND ", $conditions);
                 }
 
-                $sql .= " ORDER BY rating DESC, created_at DESC LIMIT ? OFFSET ?";
+                $sql .= " ORDER BY stars DESC, rating DESC, created_at DESC LIMIT ? OFFSET ?";
                 $params[] = $limit;
                 $params[] = $offset;
 
                 $hotels = $db->fetchAll($sql, $params);
+
+                // Parse gallery JSON for each hotel
+                foreach ($hotels as &$hotel) {
+                    if (isset($hotel['gallery']) && is_string($hotel['gallery'])) {
+                        $hotel['gallery'] = json_decode($hotel['gallery'], true) ?: [];
+                    }
+                }
+
                 successResponse($hotels);
             }
             break;
@@ -67,9 +79,15 @@ try {
                 }
             }
 
+            // Prepare gallery JSON
+            $gallery = null;
+            if (isset($data['gallery']) && is_array($data['gallery'])) {
+                $gallery = json_encode($data['gallery'], JSON_UNESCAPED_UNICODE);
+            }
+
             $id = $db->insert(
-                "INSERT INTO hotels (name_th, name_en, description_th, description_en, location, address, price_per_night, rating, image, amenities, status, created_at)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', NOW())",
+                "INSERT INTO hotels (name_th, name_en, description_th, description_en, location, address, price_per_night, rating, stars, reviews, image, gallery, amenities, status, created_at)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', NOW())",
                 [
                     sanitize($data['name_th']),
                     sanitize($data['name_en']),
@@ -78,8 +96,11 @@ try {
                     sanitize($data['location']),
                     sanitize($data['address'] ?? ''),
                     (float)$data['price_per_night'],
-                    (float)($data['rating'] ?? 0),
+                    (float)($data['rating'] ?? 4.0),
+                    (int)($data['stars'] ?? 4),
+                    (int)($data['reviews'] ?? 0),
                     sanitize($data['image'] ?? ''),
+                    $gallery,
                     sanitize($data['amenities'] ?? '')
                 ]
             );
@@ -95,35 +116,46 @@ try {
                 errorResponse('Hotel ID is required');
             }
 
+            // Build dynamic update query
+            $fields = [];
+            $params = [];
+
+            $allowedFields = [
+                'name_th', 'name_en', 'description_th', 'description_en',
+                'location', 'address', 'price_per_night', 'rating', 'stars', 'reviews',
+                'image', 'gallery', 'amenities', 'status'
+            ];
+
+            $numericFields = ['price_per_night', 'rating', 'stars', 'reviews'];
+
+            foreach ($allowedFields as $field) {
+                if (isset($data[$field])) {
+                    $fields[] = "$field = ?";
+
+                    if ($field === 'gallery' && is_array($data[$field])) {
+                        $params[] = json_encode($data[$field], JSON_UNESCAPED_UNICODE);
+                    } elseif (in_array($field, $numericFields)) {
+                        if (in_array($field, ['price_per_night', 'rating'])) {
+                            $params[] = (float)$data[$field];
+                        } else {
+                            $params[] = (int)$data[$field];
+                        }
+                    } else {
+                        $params[] = sanitize($data[$field]);
+                    }
+                }
+            }
+
+            if (empty($fields)) {
+                errorResponse('No fields to update');
+            }
+
+            $fields[] = "updated_at = NOW()";
+            $params[] = (int)$id;
+
             $db->execute(
-                "UPDATE hotels SET
-                    name_th = COALESCE(?, name_th),
-                    name_en = COALESCE(?, name_en),
-                    description_th = COALESCE(?, description_th),
-                    description_en = COALESCE(?, description_en),
-                    location = COALESCE(?, location),
-                    address = COALESCE(?, address),
-                    price_per_night = COALESCE(?, price_per_night),
-                    rating = COALESCE(?, rating),
-                    image = COALESCE(?, image),
-                    amenities = COALESCE(?, amenities),
-                    status = COALESCE(?, status),
-                    updated_at = NOW()
-                 WHERE id = ?",
-                [
-                    $data['name_th'] ?? null,
-                    $data['name_en'] ?? null,
-                    $data['description_th'] ?? null,
-                    $data['description_en'] ?? null,
-                    $data['location'] ?? null,
-                    $data['address'] ?? null,
-                    $data['price_per_night'] ?? null,
-                    $data['rating'] ?? null,
-                    $data['image'] ?? null,
-                    $data['amenities'] ?? null,
-                    $data['status'] ?? null,
-                    (int)$id
-                ]
+                "UPDATE hotels SET " . implode(', ', $fields) . " WHERE id = ?",
+                $params
             );
 
             successResponse(null, 'Hotel updated successfully');

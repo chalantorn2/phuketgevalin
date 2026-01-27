@@ -69,11 +69,15 @@ export default function PackageToursSection() {
       </div>
 
       {showForm && (
-        <PackageTourForm
-          tour={editingTour}
-          onClose={() => setShowForm(false)}
-          onSave={() => { setShowForm(false); fetchTours(); }}
-        />
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-start justify-center overflow-y-auto py-8">
+          <div className="w-full max-w-5xl mx-4">
+            <PackageTourForm
+              tour={editingTour}
+              onClose={() => setShowForm(false)}
+              onSave={() => { setShowForm(false); fetchTours(); }}
+            />
+          </div>
+        </div>
       )}
 
       <div className="bg-white rounded-xl shadow-sm overflow-hidden">
@@ -135,13 +139,13 @@ export default function PackageToursSection() {
                       <div className="flex gap-2">
                         <button
                           onClick={() => { setEditingTour(tour); setShowForm(true); }}
-                          className="text-sky-600 hover:text-sky-800"
+                          className="px-3 py-1.5 text-sm font-medium text-sky-700 bg-sky-50 border border-sky-200 rounded-lg hover:bg-sky-100 hover:border-sky-300 transition-colors"
                         >
                           Edit
                         </button>
                         <button
                           onClick={() => handleDelete(tour.id)}
-                          className="text-red-600 hover:text-red-800"
+                          className="px-3 py-1.5 text-sm font-medium text-red-700 bg-red-50 border border-red-200 rounded-lg hover:bg-red-100 hover:border-red-300 transition-colors"
                         >
                           Delete
                         </button>
@@ -217,6 +221,27 @@ function DynamicListInput({ label, placeholder, color = 'blue', items = [], onAd
   );
 }
 
+// SVG Flag Components
+const ThaiFlag = () => (
+  <svg className="w-5 h-3 rounded shadow-sm flex-shrink-0" viewBox="0 0 28 20" fill="none">
+    <rect width="28" height="3.33" fill="#A51931" />
+    <rect y="3.33" width="28" height="3.33" fill="#fff" />
+    <rect y="6.66" width="28" height="6.67" fill="#2D2A4A" />
+    <rect y="13.33" width="28" height="3.33" fill="#fff" />
+    <rect y="16.66" width="28" height="3.34" fill="#A51931" />
+  </svg>
+);
+
+const UKFlag = () => (
+  <svg className="w-5 h-3 rounded shadow-sm flex-shrink-0" viewBox="0 0 28 20" fill="none">
+    <rect width="28" height="20" fill="#012169" />
+    <path d="M0 0L28 20M28 0L0 20" stroke="#fff" strokeWidth="3.5" />
+    <path d="M0 0L28 20M28 0L0 20" stroke="#C8102E" strokeWidth="2" />
+    <path d="M14 0V20M0 10H28" stroke="#fff" strokeWidth="6" />
+    <path d="M14 0V20M0 10H28" stroke="#C8102E" strokeWidth="3.5" />
+  </svg>
+);
+
 // Package Tour Form Component
 function PackageTourForm({ tour, onClose, onSave }) {
   // Parse JSON arrays from DB
@@ -244,11 +269,22 @@ function PackageTourForm({ tour, onClose, onSave }) {
     gallery: parseJsonArray(tour?.gallery),
     rating: tour?.rating || 4.5,
     reviews: tour?.reviews || 0,
-    highlights: tour?.highlights || '',
+    // Highlights - แยกภาษา
+    highlights_th: parseJsonArray(tour?.highlights_th),
+    highlights_en: parseJsonArray(tour?.highlights_en),
+    // Itinerary - รองรับ 2 ภาษา
     itinerary: parseJsonArray(tour?.itinerary),
-    included: parseJsonArray(tour?.included),
-    excluded: parseJsonArray(tour?.excluded),
-    category: tour?.category || 'package',
+    // Included/Excluded - แยกภาษา
+    included_th: parseJsonArray(tour?.included_th),
+    included_en: parseJsonArray(tour?.included_en),
+    excluded_th: parseJsonArray(tour?.excluded_th),
+    excluded_en: parseJsonArray(tour?.excluded_en),
+    // Meeting point & Important info
+    meeting_point_th: tour?.meeting_point_th || '',
+    meeting_point_en: tour?.meeting_point_en || '',
+    important_info_th: tour?.important_info_th || '',
+    important_info_en: tour?.important_info_en || '',
+    category: tour?.category || 'domestic',
     status: tour?.status || 'active',
   });
   const [saving, setSaving] = useState(false);
@@ -290,9 +326,7 @@ function PackageTourForm({ tour, onClose, onSave }) {
     setUploading(true);
 
     try {
-      const apiBase = window.location.hostname === 'localhost'
-        ? 'https://www.phuketgevalin.com/api'
-        : '/api';
+      const apiBase = '/api';
 
       const uploadedUrls = [];
       for (const file of validFiles) {
@@ -384,15 +418,17 @@ function PackageTourForm({ tour, onClose, onSave }) {
     setDraggedIndex(null);
   };
 
-  // Itinerary management - Package Tour style (day, title, desc, meals, accommodation)
+  // Itinerary management - Package Tour style with bilingual support
   const addItineraryItem = () => {
     const nextDay = String(formData.itinerary.length + 1).padStart(2, '0');
     setFormData(prev => ({
       ...prev,
       itinerary: [...prev.itinerary, {
         day: nextDay,
-        title: '',
-        desc: '',
+        title_th: '',
+        title_en: '',
+        description_th: '',
+        description_en: '',
         meals: { b: false, l: false, d: false, note: '' },
         accommodation: ''
       }]
@@ -479,9 +515,9 @@ function PackageTourForm({ tour, onClose, onSave }) {
   ];
 
   return (
-    <div className="bg-white rounded-xl shadow-sm">
-      {/* Header */}
-      <div className="flex justify-between items-center p-4 border-b">
+    <div className="bg-white rounded-xl shadow-sm flex flex-col max-h-[90vh]">
+      {/* Fixed Header */}
+      <div className="flex justify-between items-center p-4 border-b flex-shrink-0">
         <h4 className="text-lg font-semibold">{tour ? 'Edit Package Tour' : 'Add New Package Tour'}</h4>
         <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -491,7 +527,7 @@ function PackageTourForm({ tour, onClose, onSave }) {
       </div>
 
       {/* Tabs */}
-      <div className="border-b bg-gray-50">
+      <div className="border-b bg-gray-50 flex-shrink-0">
         <nav className="flex">
           {tabs.map((tab) => (
             <button
@@ -511,8 +547,9 @@ function PackageTourForm({ tour, onClose, onSave }) {
         </nav>
       </div>
 
-      <form onSubmit={handleSubmit}>
-        <div className="p-6">
+      <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
+        {/* Scrollable Content */}
+        <div className="flex-1 overflow-y-auto p-6">
           {/* Tab 1: Basic Info */}
           {activeTab === 'basic' && (
             <div className="space-y-4">
@@ -688,42 +725,28 @@ function PackageTourForm({ tour, onClose, onSave }) {
                 <h5 className="font-medium text-gray-800 mb-3">Tour Name / ชื่อทัวร์</h5>
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
-                      <svg className="w-5 h-3 rounded shadow-sm flex-shrink-0" viewBox="0 0 28 20" fill="none">
-                        <rect width="28" height="3.33" fill="#A51931" />
-                        <rect y="3.33" width="28" height="3.33" fill="#fff" />
-                        <rect y="6.66" width="28" height="6.67" fill="#2D2A4A" />
-                        <rect y="13.33" width="28" height="3.33" fill="#fff" />
-                        <rect y="16.66" width="28" height="3.34" fill="#A51931" />
-                      </svg>
-                      Name (Thai) *
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.name_th}
-                      onChange={(e) => setFormData({ ...formData, name_th: e.target.value })}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2"
-                      placeholder="ทัวร์ญี่ปุ่น โตเกียว ฟูจิ 5 วัน 3 คืน"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
-                      <svg className="w-5 h-3 rounded shadow-sm flex-shrink-0" viewBox="0 0 28 20" fill="none">
-                        <rect width="28" height="20" fill="#012169" />
-                        <path d="M0 0L28 20M28 0L0 20" stroke="#fff" strokeWidth="3.5" />
-                        <path d="M0 0L28 20M28 0L0 20" stroke="#C8102E" strokeWidth="2" />
-                        <path d="M14 0V20M0 10H28" stroke="#fff" strokeWidth="6" />
-                        <path d="M14 0V20M0 10H28" stroke="#C8102E" strokeWidth="3.5" />
-                      </svg>
-                      Name (English) *
+                    <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-1.5">
+                      <UKFlag /> Name (English) *
                     </label>
                     <input
                       type="text"
                       value={formData.name_en}
                       onChange={(e) => setFormData({ ...formData, name_en: e.target.value })}
                       className="w-full border border-gray-300 rounded-lg px-3 py-2"
-                      placeholder="Japan Tokyo Fuji 5 Days 3 Nights"
+                      placeholder="Chiang Mai Doi Inthanon 3D2N Tour"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-1.5">
+                      <ThaiFlag /> Name (Thai) *
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.name_th}
+                      onChange={(e) => setFormData({ ...formData, name_th: e.target.value })}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                      placeholder="ทัวร์เชียงใหม่ ดอยอินทนนท์ 3 วัน 2 คืน"
                       required
                     />
                   </div>
@@ -735,16 +758,7 @@ function PackageTourForm({ tour, onClose, onSave }) {
                 <h5 className="font-medium text-gray-800 mb-3">Description / คำอธิบาย</h5>
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Description (Thai)</label>
-                    <textarea
-                      value={formData.description_th}
-                      onChange={(e) => setFormData({ ...formData, description_th: e.target.value })}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2"
-                      rows="4"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Description (English)</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-1.5"><UKFlag /> Description (English)</label>
                     <textarea
                       value={formData.description_en}
                       onChange={(e) => setFormData({ ...formData, description_en: e.target.value })}
@@ -752,20 +766,41 @@ function PackageTourForm({ tour, onClose, onSave }) {
                       rows="4"
                     />
                   </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-1.5"><ThaiFlag /> Description (Thai)</label>
+                    <textarea
+                      value={formData.description_th}
+                      onChange={(e) => setFormData({ ...formData, description_th: e.target.value })}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                      rows="4"
+                    />
+                  </div>
                 </div>
               </div>
 
-              {/* Highlights */}
+              {/* Highlights - Bilingual */}
               <div className="bg-white rounded-lg p-4 border border-gray-200 shadow-sm">
                 <h5 className="font-medium text-gray-800 mb-3">Highlights / ไฮไลท์</h5>
-                <p className="text-xs text-gray-500 mb-2">Separate each highlight with a comma (e.g. "บินตรงการบินไทย, พักโรงแรม 4 ดาว, บุฟเฟต์ขาปู")</p>
-                <textarea
-                  value={formData.highlights}
-                  onChange={(e) => setFormData({ ...formData, highlights: e.target.value })}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2"
-                  rows="3"
-                  placeholder="บินตรงการบินไทย บริการ Full Service, พักโรงแรม 4 ดาว, บุฟเฟต์ขาปูยักษ์ไม่อั้น"
-                />
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  <DynamicListInput
+                    label={<span className="flex items-center gap-1.5"><UKFlag /> Highlights (English)</span>}
+                    placeholder="e.g. Conquer Doi Inthanon peak"
+                    color="blue"
+                    items={formData.highlights_en}
+                    onAdd={() => addListItem('highlights_en')}
+                    onUpdate={(index, value) => updateListItem('highlights_en', index, value)}
+                    onRemove={(index) => removeListItem('highlights_en', index)}
+                  />
+                  <DynamicListInput
+                    label={<span className="flex items-center gap-1.5"><ThaiFlag /> Highlights (Thai)</span>}
+                    placeholder="เช่น พิชิตยอดดอยอินทนนท์"
+                    color="blue"
+                    items={formData.highlights_th}
+                    onAdd={() => addListItem('highlights_th')}
+                    onUpdate={(index, value) => updateListItem('highlights_th', index, value)}
+                    onRemove={(index) => removeListItem('highlights_th', index)}
+                  />
+                </div>
               </div>
             </div>
           )}
@@ -811,25 +846,55 @@ function PackageTourForm({ tour, onClose, onSave }) {
                         <div className="bg-sky-500 text-white w-10 h-10 rounded-full flex items-center justify-center font-bold">
                           {item.day || String(index + 1).padStart(2, '0')}
                         </div>
-                        <input
-                          type="text"
-                          value={item.title}
-                          onChange={(e) => updateItineraryItem(index, 'title', e.target.value)}
-                          className="flex-1 border border-gray-300 rounded-lg px-3 py-2 font-medium"
-                          placeholder="Day title (e.g. กรุงเทพฯ - สนามบินฮาเนดะ)"
-                        />
+                        <span className="text-sm font-medium text-gray-500">Day {item.day || index + 1}</span>
                       </div>
 
-                      {/* Description */}
-                      <div className="mb-3">
-                        <label className="block text-xs font-medium text-gray-600 mb-1">Description</label>
-                        <textarea
-                          value={item.desc}
-                          onChange={(e) => updateItineraryItem(index, 'desc', e.target.value)}
-                          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
-                          rows="2"
-                          placeholder="รายละเอียดกิจกรรมในวันนี้..."
-                        />
+                      {/* Titles - Bilingual (English Left, Thai Right) */}
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 mb-3">
+                        <div>
+                          <label className="block text-xs font-medium text-gray-600 mb-1 flex items-center gap-1.5"><UKFlag /> Title (English)</label>
+                          <input
+                            type="text"
+                            value={item.title_en || ''}
+                            onChange={(e) => updateItineraryItem(index, 'title_en', e.target.value)}
+                            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                            placeholder="Bangkok - Chiang Mai - Doi Suthep"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-gray-600 mb-1 flex items-center gap-1.5"><ThaiFlag /> Title (Thai)</label>
+                          <input
+                            type="text"
+                            value={item.title_th || ''}
+                            onChange={(e) => updateItineraryItem(index, 'title_th', e.target.value)}
+                            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                            placeholder="กรุงเทพฯ - เชียงใหม่ - ดอยสุเทพ"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Descriptions - Bilingual (English Left, Thai Right) */}
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 mb-3">
+                        <div>
+                          <label className="block text-xs font-medium text-gray-600 mb-1 flex items-center gap-1.5"><UKFlag /> Description (English)</label>
+                          <textarea
+                            value={item.description_en || ''}
+                            onChange={(e) => updateItineraryItem(index, 'description_en', e.target.value)}
+                            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                            rows="2"
+                            placeholder="Activities description for this day..."
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-gray-600 mb-1 flex items-center gap-1.5"><ThaiFlag /> Description (Thai)</label>
+                          <textarea
+                            value={item.description_th || ''}
+                            onChange={(e) => updateItineraryItem(index, 'description_th', e.target.value)}
+                            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                            rows="2"
+                            placeholder="รายละเอียดกิจกรรมในวันนี้..."
+                          />
+                        </div>
                       </div>
 
                       {/* Meals & Accommodation */}
@@ -896,38 +961,115 @@ function PackageTourForm({ tour, onClose, onSave }) {
 
           {/* Tab 4: Inclusions */}
           {activeTab === 'inclusions' && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              {/* Included */}
+            <div className="space-y-6">
+              {/* Included - Bilingual (English Left, Thai Right) */}
               <div className="bg-white rounded-lg p-4 border border-gray-200 shadow-sm">
-                <DynamicListInput
-                  label="What's Included / อัตราค่าบริการรวม"
-                  placeholder="e.g. ตั๋วเครื่องบินไป-กลับ ชั้นประหยัด"
-                  color="blue"
-                  items={formData.included}
-                  onAdd={() => addListItem('included')}
-                  onUpdate={(index, value) => updateListItem('included', index, value)}
-                  onRemove={(index) => removeListItem('included', index)}
-                />
+                <h5 className="font-medium text-gray-800 mb-3 flex items-center gap-2">
+                  <span className="text-green-500">✓</span> What's Included / อัตราค่าบริการรวม
+                </h5>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  <DynamicListInput
+                    label={<span className="flex items-center gap-1.5"><UKFlag /> Included (English)</span>}
+                    placeholder="e.g. VIP air-conditioned van"
+                    color="blue"
+                    items={formData.included_en}
+                    onAdd={() => addListItem('included_en')}
+                    onUpdate={(index, value) => updateListItem('included_en', index, value)}
+                    onRemove={(index) => removeListItem('included_en', index)}
+                  />
+                  <DynamicListInput
+                    label={<span className="flex items-center gap-1.5"><ThaiFlag /> Included (Thai)</span>}
+                    placeholder="เช่น รถตู้ปรับอากาศ VIP"
+                    color="blue"
+                    items={formData.included_th}
+                    onAdd={() => addListItem('included_th')}
+                    onUpdate={(index, value) => updateListItem('included_th', index, value)}
+                    onRemove={(index) => removeListItem('included_th', index)}
+                  />
+                </div>
               </div>
 
-              {/* Excluded */}
+              {/* Excluded - Bilingual (English Left, Thai Right) */}
               <div className="bg-white rounded-lg p-4 border border-gray-200 shadow-sm">
-                <DynamicListInput
-                  label="What's Not Included / อัตราค่าบริการไม่รวม"
-                  placeholder="e.g. ค่าทิปไกด์และคนขับรถ"
-                  color="orange"
-                  items={formData.excluded}
-                  onAdd={() => addListItem('excluded')}
-                  onUpdate={(index, value) => updateListItem('excluded', index, value)}
-                  onRemove={(index) => removeListItem('excluded', index)}
-                />
+                <h5 className="font-medium text-gray-800 mb-3 flex items-center gap-2">
+                  <span className="text-red-500">✗</span> What's Not Included / อัตราค่าบริการไม่รวม
+                </h5>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  <DynamicListInput
+                    label={<span className="flex items-center gap-1.5"><UKFlag /> Excluded (English)</span>}
+                    placeholder="e.g. Personal expenses"
+                    color="orange"
+                    items={formData.excluded_en}
+                    onAdd={() => addListItem('excluded_en')}
+                    onUpdate={(index, value) => updateListItem('excluded_en', index, value)}
+                    onRemove={(index) => removeListItem('excluded_en', index)}
+                  />
+                  <DynamicListInput
+                    label={<span className="flex items-center gap-1.5"><ThaiFlag /> Excluded (Thai)</span>}
+                    placeholder="เช่น ค่าใช้จ่ายส่วนตัว"
+                    color="orange"
+                    items={formData.excluded_th}
+                    onAdd={() => addListItem('excluded_th')}
+                    onUpdate={(index, value) => updateListItem('excluded_th', index, value)}
+                    onRemove={(index) => removeListItem('excluded_th', index)}
+                  />
+                </div>
+              </div>
+
+              {/* Meeting Point & Important Info (English Left, Thai Right) */}
+              <div className="bg-white rounded-lg p-4 border border-gray-200 shadow-sm">
+                <h5 className="font-medium text-gray-800 mb-3">Additional Info / ข้อมูลเพิ่มเติม</h5>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1 flex items-center gap-1.5"><UKFlag /> Meeting Point</label>
+                    <input
+                      type="text"
+                      value={formData.meeting_point_en}
+                      onChange={(e) => setFormData({ ...formData, meeting_point_en: e.target.value })}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                      placeholder="e.g. PTT Gas Station Vibhavadi"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1 flex items-center gap-1.5"><ThaiFlag /> จุดนัดพบ</label>
+                    <input
+                      type="text"
+                      value={formData.meeting_point_th}
+                      onChange={(e) => setFormData({ ...formData, meeting_point_th: e.target.value })}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                      placeholder="เช่น ปั๊ม ปตท. วิภาวดี"
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1 flex items-center gap-1.5"><UKFlag /> Important Info</label>
+                    <textarea
+                      value={formData.important_info_en}
+                      onChange={(e) => setFormData({ ...formData, important_info_en: e.target.value })}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                      rows="3"
+                      placeholder="e.g. Please bring warm clothing..."
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1 flex items-center gap-1.5"><ThaiFlag /> ข้อมูลสำคัญ</label>
+                    <textarea
+                      value={formData.important_info_th}
+                      onChange={(e) => setFormData({ ...formData, important_info_th: e.target.value })}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                      rows="3"
+                      placeholder="เช่น กรุณาเตรียมเสื้อกันหนาว..."
+                    />
+                  </div>
+                </div>
               </div>
             </div>
           )}
         </div>
 
-        {/* Footer */}
-        <div className="flex gap-3 justify-end p-4 border-t bg-gray-50">
+        {/* Fixed Footer */}
+        <div className="flex gap-3 justify-end p-4 border-t bg-gray-50 flex-shrink-0">
           <button
             type="button"
             onClick={onClose}

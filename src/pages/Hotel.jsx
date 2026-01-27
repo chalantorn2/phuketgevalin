@@ -58,10 +58,10 @@ export default function Hotel({ onViewDetail }) {
     name: getLocalizedText(hotel.name_th, hotel.name_en),
     description: getLocalizedText(hotel.description_th, hotel.description_en),
     amenities: hotel.amenities ? hotel.amenities.split(",").map(a => a.trim()) : [],
-    stars: Math.round(hotel.rating) || 4,
+    stars: hotel.stars || Math.round(hotel.rating) || 4,
     price: Number(hotel.price_per_night),
     discountPrice: Math.round(Number(hotel.price_per_night) * 1.3),
-    reviews: Math.floor(Math.random() * 500) + 50,
+    reviews: hotel.reviews || 0,
   });
 
   // Logic to filter hotels

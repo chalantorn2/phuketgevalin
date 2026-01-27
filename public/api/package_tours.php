@@ -26,7 +26,7 @@ try {
 
                 if ($packageTour) {
                     // Parse JSON fields
-                    $jsonFields = ['gallery', 'itinerary', 'included', 'excluded'];
+                    $jsonFields = ['gallery', 'itinerary', 'included', 'excluded', 'highlights_th', 'highlights_en', 'included_th', 'included_en', 'excluded_th', 'excluded_en'];
                     foreach ($jsonFields as $field) {
                         if (isset($packageTour[$field]) && is_string($packageTour[$field])) {
                             $packageTour[$field] = json_decode($packageTour[$field], true);
@@ -66,7 +66,7 @@ try {
                 $packageTours = $db->fetchAll($sql, $params);
 
                 // Parse JSON fields for each tour
-                $jsonFields = ['gallery', 'itinerary', 'included', 'excluded'];
+                $jsonFields = ['gallery', 'itinerary', 'included', 'excluded', 'highlights_th', 'highlights_en', 'included_th', 'included_en', 'excluded_th', 'excluded_en'];
                 foreach ($packageTours as &$tour) {
                     foreach ($jsonFields as $field) {
                         if (isset($tour[$field]) && is_string($tour[$field])) {
@@ -113,7 +113,7 @@ try {
             }
 
             // Prepare JSON fields
-            $jsonFields = ['gallery', 'itinerary', 'included', 'excluded'];
+            $jsonFields = ['gallery', 'itinerary', 'included', 'excluded', 'highlights_th', 'highlights_en', 'included_th', 'included_en', 'excluded_th', 'excluded_en'];
             foreach ($jsonFields as $field) {
                 if (isset($data[$field]) && is_array($data[$field])) {
                     $data[$field] = json_encode($data[$field], JSON_UNESCAPED_UNICODE);
@@ -127,8 +127,10 @@ try {
                     price, discount_price,
                     image, gallery, rating, reviews,
                     highlights, itinerary, included, excluded,
+                    highlights_th, highlights_en, included_th, included_en, excluded_th, excluded_en,
+                    meeting_point_th, meeting_point_en, important_info_th, important_info_en,
                     category, status, created_at
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())",
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())",
                 [
                     sanitize($data['name_th']),
                     sanitize($data['name_en']),
@@ -146,7 +148,17 @@ try {
                     $data['itinerary'] ?? null,
                     $data['included'] ?? null,
                     $data['excluded'] ?? null,
-                    sanitize($data['category'] ?? 'package'),
+                    $data['highlights_th'] ?? null,
+                    $data['highlights_en'] ?? null,
+                    $data['included_th'] ?? null,
+                    $data['included_en'] ?? null,
+                    $data['excluded_th'] ?? null,
+                    $data['excluded_en'] ?? null,
+                    sanitize($data['meeting_point_th'] ?? ''),
+                    sanitize($data['meeting_point_en'] ?? ''),
+                    sanitize($data['important_info_th'] ?? ''),
+                    sanitize($data['important_info_en'] ?? ''),
+                    sanitize($data['category'] ?? 'domestic'),
                     $data['status'] ?? 'active'
                 ]
             );
@@ -173,10 +185,12 @@ try {
                 'price', 'discount_price',
                 'image', 'gallery', 'rating', 'reviews',
                 'highlights', 'itinerary', 'included', 'excluded',
+                'highlights_th', 'highlights_en', 'included_th', 'included_en', 'excluded_th', 'excluded_en',
+                'meeting_point_th', 'meeting_point_en', 'important_info_th', 'important_info_en',
                 'category', 'status'
             ];
 
-            $jsonFields = ['gallery', 'itinerary', 'included', 'excluded'];
+            $jsonFields = ['gallery', 'itinerary', 'included', 'excluded', 'highlights_th', 'highlights_en', 'included_th', 'included_en', 'excluded_th', 'excluded_en'];
             $numericFields = ['price', 'discount_price', 'rating', 'reviews'];
 
             foreach ($allowedFields as $field) {

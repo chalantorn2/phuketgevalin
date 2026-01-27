@@ -49,8 +49,28 @@ switch ($path) {
         require_once __DIR__ . '/hotels.php';
         break;
 
+    case 'hotel_room_types':
+        require_once __DIR__ . '/hotel_room_types.php';
+        break;
+
+    case 'hotel_periods':
+        require_once __DIR__ . '/hotel_periods.php';
+        break;
+
+    case 'hotel_room_prices':
+        require_once __DIR__ . '/hotel_room_prices.php';
+        break;
+
     case 'transfers':
         require_once __DIR__ . '/transfers.php';
+        break;
+
+    case 'transfer_locations':
+        require_once __DIR__ . '/transfer_locations.php';
+        break;
+
+    case 'transfer_routes':
+        require_once __DIR__ . '/transfer_routes.php';
         break;
 
     case 'oneday_trips':
