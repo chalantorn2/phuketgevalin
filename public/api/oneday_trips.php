@@ -1,4 +1,5 @@
 <?php
+
 /**
  * One Day Trips API - Phuket Gevalin
  * CRUD operations for One Day Trip tours
@@ -25,8 +26,18 @@ try {
 
                 if ($trip) {
                     // Parse JSON fields
-                    $jsonFields = ['gallery', 'tags_th', 'tags_en', 'highlights_th', 'highlights_en',
-                                   'itinerary', 'included_th', 'included_en', 'excluded_th', 'excluded_en'];
+                    $jsonFields = [
+                        'gallery',
+                        'tags_th',
+                        'tags_en',
+                        'highlights_th',
+                        'highlights_en',
+                        'itinerary',
+                        'included_th',
+                        'included_en',
+                        'excluded_th',
+                        'excluded_en'
+                    ];
                     foreach ($jsonFields as $field) {
                         if (isset($trip[$field]) && is_string($trip[$field])) {
                             $trip[$field] = json_decode($trip[$field], true);
@@ -40,6 +51,21 @@ try {
                 // List all trips
                 $showAll = isset($_GET['all']) && $_GET['all'] === 'true';
                 $province = $_GET['province'] ?? null;
+
+                // Return distinct provinces for filter
+                if (isset($_GET['provinces'])) {
+                    $provSql = "SELECT DISTINCT province_key FROM oneday_trips WHERE province_key != '' AND province_key IS NOT NULL";
+                    if (!$showAll) {
+                        $provSql .= " AND status = 'active'";
+                    }
+                    $provSql .= " ORDER BY province_key ASC";
+                    $provinces = $db->fetchAll($provSql);
+                    $provinceKeys = array_map(function ($row) {
+                        return $row['province_key'];
+                    }, $provinces);
+                    successResponse(['provinces' => $provinceKeys]);
+                    break;
+                }
 
                 $sql = "SELECT * FROM oneday_trips";
                 $params = [];
@@ -63,8 +89,18 @@ try {
                 $trips = $db->fetchAll($sql, $params);
 
                 // Parse JSON fields for each trip
-                $jsonFields = ['gallery', 'tags_th', 'tags_en', 'highlights_th', 'highlights_en',
-                               'itinerary', 'included_th', 'included_en', 'excluded_th', 'excluded_en'];
+                $jsonFields = [
+                    'gallery',
+                    'tags_th',
+                    'tags_en',
+                    'highlights_th',
+                    'highlights_en',
+                    'itinerary',
+                    'included_th',
+                    'included_en',
+                    'excluded_th',
+                    'excluded_en'
+                ];
                 foreach ($trips as &$trip) {
                     foreach ($jsonFields as $field) {
                         if (isset($trip[$field]) && is_string($trip[$field])) {
@@ -93,8 +129,18 @@ try {
             $sortOrder = ($maxOrder['max_order'] ?? 0) + 1;
 
             // Prepare JSON fields
-            $jsonFields = ['gallery', 'tags_th', 'tags_en', 'highlights_th', 'highlights_en',
-                           'itinerary', 'included_th', 'included_en', 'excluded_th', 'excluded_en'];
+            $jsonFields = [
+                'gallery',
+                'tags_th',
+                'tags_en',
+                'highlights_th',
+                'highlights_en',
+                'itinerary',
+                'included_th',
+                'included_en',
+                'excluded_th',
+                'excluded_en'
+            ];
             foreach ($jsonFields as $field) {
                 if (isset($data[$field]) && is_array($data[$field])) {
                     $data[$field] = json_encode($data[$field], JSON_UNESCAPED_UNICODE);
@@ -164,18 +210,51 @@ try {
             $params = [];
 
             $allowedFields = [
-                'title_th', 'title_en', 'description_th', 'description_en',
-                'location_th', 'location_en', 'province_key',
-                'duration_th', 'duration_en', 'price', 'discount_price',
-                'image', 'gallery', 'rating', 'reviews', 'bestseller',
-                'tags_th', 'tags_en', 'highlights_th', 'highlights_en',
-                'itinerary', 'included_th', 'included_en', 'excluded_th', 'excluded_en',
-                'meeting_point_th', 'meeting_point_en', 'important_info_th', 'important_info_en',
-                'sort_order', 'status'
+                'title_th',
+                'title_en',
+                'description_th',
+                'description_en',
+                'location_th',
+                'location_en',
+                'province_key',
+                'duration_th',
+                'duration_en',
+                'price',
+                'discount_price',
+                'image',
+                'gallery',
+                'rating',
+                'reviews',
+                'bestseller',
+                'tags_th',
+                'tags_en',
+                'highlights_th',
+                'highlights_en',
+                'itinerary',
+                'included_th',
+                'included_en',
+                'excluded_th',
+                'excluded_en',
+                'meeting_point_th',
+                'meeting_point_en',
+                'important_info_th',
+                'important_info_en',
+                'sort_order',
+                'status'
             ];
 
-            $jsonFields = ['gallery', 'tags_th', 'tags_en', 'highlights_th', 'highlights_en',
-                           'itinerary', 'included_th', 'included_en', 'excluded_th', 'excluded_en'];
+            $jsonFields = [
+                'gallery',
+                'tags_th',
+                'tags_en',
+                'highlights_th',
+                'highlights_en',
+                'itinerary',
+                'included_th',
+                'included_en',
+                'excluded_th',
+                'excluded_en'
+            ];
 
             $numericFields = ['price', 'discount_price', 'rating', 'reviews', 'bestseller', 'sort_order'];
 

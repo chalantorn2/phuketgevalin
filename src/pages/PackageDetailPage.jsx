@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import {
   MapPin,
   Clock,
@@ -23,9 +24,12 @@ import Button from "../components/ui/Button";
 import { useLanguage } from "../context/LanguageContext";
 import { packageToursAPI } from "../services/api";
 
-export default function PackageDetailPage({ packageId, onBack }) {
+export default function PackageDetailPage() {
+  const { id: packageId } = useParams();
+  const navigate = useNavigate();
   const { t, language } = useLanguage();
   const [guests, setGuests] = useState(2);
+  const [startDate, setStartDate] = useState("");
   const [packageData, setPackageData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -81,7 +85,7 @@ export default function PackageDetailPage({ packageId, onBack }) {
       <div className="bg-gray-50 min-h-screen pb-24 pt-20">
         <div className="container mx-auto px-6 py-4">
           <button
-            onClick={onBack}
+            onClick={() => navigate("/package-tour")}
             className="flex items-center gap-2 text-gray-500 hover:text-primary-600 transition-colors font-medium cursor-pointer"
           >
             <ChevronLeft size={20} /> {t("common.back") || "Back"}
@@ -171,7 +175,7 @@ export default function PackageDetailPage({ packageId, onBack }) {
       {/* Navigation Breadcrumb */}
       <div className="container mx-auto px-6 py-4">
         <button
-          onClick={onBack}
+          onClick={() => navigate("/package-tour")}
           className="flex items-center gap-2 text-gray-500 hover:text-primary-600 transition-colors font-medium cursor-pointer"
         >
           <ChevronLeft size={20} />{" "}
@@ -504,39 +508,33 @@ export default function PackageDetailPage({ packageId, onBack }) {
                     </span>
                   )}
                 </div>
-                <div className="mt-2 inline-flex items-center gap-1 text-xs text-green-600 font-medium bg-green-50 px-2 py-1 rounded-md w-max">
-                  <ShieldCheck size={12} />{" "}
-                  {language === "TH"
-                    ? "รวมตั๋วเครื่องบินแล้ว"
-                    : "Includes Flight Tickets"}
-                </div>
               </div>
 
               {/* Form */}
               <div className="space-y-4 mb-6">
                 <div>
                   <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5 ml-1">
-                    {language === "TH" ? "รอบเดินทาง" : "Travel Dates"}
+                    {language === "TH" ? "เดินทางวันที่" : "Departure Date"}
                   </label>
-                  <select className="w-full bg-gray-50 border border-gray-200 rounded-xl py-3 px-4 text-sm font-medium focus:ring-2 focus:ring-primary-200 focus:border-primary-500 outline-none cursor-pointer">
-                    <option>
-                      {language === "TH"
-                        ? "เลือกวันเดินทาง..."
-                        : "Select travel dates..."}
-                    </option>
-                    <option>
-                      15 {language === "TH" ? "ต.ค." : "Oct"} - 19{" "}
-                      {language === "TH" ? "ต.ค." : "Oct"}
-                    </option>
-                    <option>
-                      25 {language === "TH" ? "ต.ค." : "Oct"} - 29{" "}
-                      {language === "TH" ? "ต.ค." : "Oct"}
-                    </option>
-                    <option>
-                      01 {language === "TH" ? "พ.ย." : "Nov"} - 05{" "}
-                      {language === "TH" ? "พ.ย." : "Nov"}
-                    </option>
-                  </select>
+                  <input
+                    type="date"
+                    value={startDate}
+                    onChange={(e) => setStartDate(e.target.value)}
+                    min={new Date().toISOString().split("T")[0]}
+                    className="w-full bg-gray-50 border border-gray-200 rounded-xl py-3 px-4 text-sm font-medium focus:ring-2 focus:ring-primary-200 focus:border-primary-500 outline-none cursor-pointer"
+                  />
+                  {startDate && packageData?.duration && (() => {
+                    const days = parseInt(packageData.duration) || 1;
+                    const start = new Date(startDate);
+                    const end = new Date(start);
+                    end.setDate(end.getDate() + days - 1);
+                    const formatDate = (d) => d.toLocaleDateString(language === "TH" ? "th-TH" : "en-US", { day: "numeric", month: "short", year: "numeric" });
+                    return (
+                      <p className="text-xs text-primary-600 mt-2 ml-1 font-medium">
+                        {formatDate(start)} - {formatDate(end)} ({packageData.duration})
+                      </p>
+                    );
+                  })()}
                 </div>
 
                 <div>
@@ -584,9 +582,7 @@ export default function PackageDetailPage({ packageId, onBack }) {
                 {language === "TH" ? "จองแพ็กเกจ" : "Book Package"}
               </Button>
               <button className="w-full py-3 text-sm font-bold text-gray-500 hover:text-primary-600 transition-colors bg-transparent border border-gray-200 rounded-xl hover:border-primary-200 cursor-pointer">
-                {language === "TH"
-                  ? "ดาวน์โหลดโปรแกรมทัวร์ (PDF)"
-                  : "Download Tour Program (PDF)"}
+                {language === "TH" ? "ขั้นตอนการจอง" : "Booking Steps"}
               </button>
             </div>
           </div>

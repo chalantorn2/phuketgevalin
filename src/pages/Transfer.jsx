@@ -11,9 +11,15 @@ import {
   Clock,
   Plane,
   Timer,
+  Bus,
+  Crown,
 } from "lucide-react";
 import { useLanguage } from "../context/LanguageContext";
-import { transfersAPI, transferLocationsAPI, transferRoutesAPI } from "../services/api";
+import {
+  transfersAPI,
+  transferLocationsAPI,
+  transferRoutesAPI,
+} from "../services/api";
 
 export default function Transfer() {
   const { t, language } = useLanguage();
@@ -35,7 +41,7 @@ export default function Transfer() {
       try {
         const [transfersData, locationsData] = await Promise.all([
           transfersAPI.getAll(),
-          transferLocationsAPI.getAll()
+          transferLocationsAPI.getAll(),
         ]);
         if (transfersData.success) {
           setTransfers(transfersData.data || []);
@@ -54,25 +60,28 @@ export default function Transfer() {
 
   // Helper function with fallback
   const getLocalizedText = (thText, enText) => {
-    return language === "TH" ? (thText || enText) : (enText || thText);
+    return language === "TH" ? thText || enText : enText || thText;
   };
 
   // Helper function to get localized transfer
   const getLocalizedTransfer = (transfer) => ({
     ...transfer,
     name: getLocalizedText(transfer.name_th, transfer.name_en),
-    description: getLocalizedText(transfer.description_th, transfer.description_en),
+    description: getLocalizedText(
+      transfer.description_th,
+      transfer.description_en,
+    ),
     price: Number(transfer.price),
     maxPassengers: Number(transfer.max_passengers),
   });
 
-  // Filter transfers by type
+  // Filter transfers by vehicle type
   const filteredTransfers = transfers
     .map(getLocalizedTransfer)
-    .filter((t) => activeType === "all" || t.type === activeType);
+    .filter((t) => activeType === "all" || t.vehicle_type === activeType);
 
-  // Transfer types for filter
-  const transferTypes = ["all", "airport", "private", "hourly"];
+  // Vehicle types for filter
+  const transferTypes = ["all", "car", "van", "bus", "luxury"];
 
   // Get translated data
   const valueProps = t("transfer.valueProps");
@@ -81,7 +90,9 @@ export default function Transfer() {
   // Helper function to get localized location name
   const getLocationName = (location) => {
     if (!location) return "";
-    return language === "TH" ? (location.name_th || location.name_en) : (location.name_en || location.name_th);
+    return language === "TH"
+      ? location.name_th || location.name_en
+      : location.name_en || location.name_th;
   };
 
   // Fetch route price when from/to changes
@@ -149,9 +160,15 @@ export default function Transfer() {
                     onChange={(e) => setFrom(Number(e.target.value))}
                     className="w-full bg-transparent outline-none text-gray-700 font-medium cursor-pointer"
                   >
-                    <option value={0}>{t("transfer.booking.from.placeholder")}</option>
+                    <option value={0}>
+                      {t("transfer.booking.from.placeholder")}
+                    </option>
                     {locations.map((loc) => (
-                      <option key={loc.id} value={loc.id} disabled={loc.id === to}>
+                      <option
+                        key={loc.id}
+                        value={loc.id}
+                        disabled={loc.id === to}
+                      >
                         {getLocationName(loc)}
                       </option>
                     ))}
@@ -171,9 +188,15 @@ export default function Transfer() {
                     onChange={(e) => setTo(Number(e.target.value))}
                     className="w-full bg-transparent outline-none text-gray-700 font-medium cursor-pointer"
                   >
-                    <option value={0}>{t("transfer.booking.to.placeholder")}</option>
+                    <option value={0}>
+                      {t("transfer.booking.to.placeholder")}
+                    </option>
                     {locations.map((loc) => (
-                      <option key={loc.id} value={loc.id} disabled={loc.id === from}>
+                      <option
+                        key={loc.id}
+                        value={loc.id}
+                        disabled={loc.id === from}
+                      >
                         {getLocationName(loc)}
                       </option>
                     ))}
@@ -214,7 +237,10 @@ export default function Transfer() {
                   </p>
                   <div className="flex items-baseline gap-2 justify-center md:justify-start">
                     <span className="text-3xl font-bold text-primary-600">
-                      ฿{routePrice ? Number(routePrice.price).toLocaleString() : 0}
+                      ฿
+                      {routePrice
+                        ? Number(routePrice.price).toLocaleString()
+                        : 0}
                     </span>
                     <span className="text-xs text-gray-400">
                       {t("transfer.booking.price.perTrip")}
@@ -222,7 +248,8 @@ export default function Transfer() {
                   </div>
                   {routePrice?.duration_minutes && (
                     <p className="text-xs text-gray-500 mt-1">
-                      ~{routePrice.duration_minutes} {language === "TH" ? "นาที" : "min"}
+                      ~{routePrice.duration_minutes}{" "}
+                      {language === "TH" ? "นาที" : "min"}
                     </p>
                   )}
                 </div>
@@ -234,7 +261,9 @@ export default function Transfer() {
 
             {!routePrice && from !== 0 && to !== 0 && from !== to && (
               <div className="text-center text-orange-500 text-sm py-2 bg-orange-50 rounded-lg">
-                {language === "TH" ? "ไม่พบเส้นทางนี้ กรุณาติดต่อเรา" : "Route not available. Please contact us."}
+                {language === "TH"
+                  ? "ไม่พบเส้นทางนี้ กรุณาติดต่อเรา"
+                  : "Route not available. Please contact us."}
               </div>
             )}
 
@@ -273,9 +302,10 @@ export default function Transfer() {
                   : "bg-white text-gray-600 border border-gray-200 hover:border-primary-300"
               }`}
             >
-              {type === "airport" && <Plane size={16} />}
-              {type === "private" && <Car size={16} />}
-              {type === "hourly" && <Timer size={16} />}
+              {type === "car" && <Car size={16} />}
+              {type === "van" && <Users size={16} />}
+              {type === "bus" && <Bus size={16} />}
+              {type === "luxury" && <Crown size={16} />}
               {t(`transfer.types.${type}`)}
             </button>
           ))}
@@ -295,21 +325,13 @@ export default function Transfer() {
               >
                 <div className="h-48 overflow-hidden bg-gray-100 relative">
                   <img
-                    src={transfer.image || "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?q=80&w=2070&auto=format&fit=crop"}
+                    src={
+                      transfer.image ||
+                      "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?q=80&w=2070&auto=format&fit=crop"
+                    }
                     alt={transfer.name}
                     className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700"
                   />
-                  <div className="absolute top-4 left-4">
-                    <span className={`px-3 py-1 rounded-full text-xs font-bold shadow-sm ${
-                      transfer.type === "airport"
-                        ? "bg-blue-100 text-blue-700"
-                        : transfer.type === "private"
-                        ? "bg-purple-100 text-purple-700"
-                        : "bg-orange-100 text-orange-700"
-                    }`}>
-                      {t(`transfer.types.${transfer.type}`)}
-                    </span>
-                  </div>
                   <div className="absolute top-4 right-4 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-xs font-bold text-gray-800 shadow-sm">
                     {transfer.vehicle_type}
                   </div>
@@ -331,7 +353,8 @@ export default function Transfer() {
                     <div className="flex items-center gap-2 text-gray-600">
                       <Users size={16} className="text-primary-500" />
                       <span className="text-sm font-medium">
-                        {transfer.maxPassengers} {t("transfer.fleet.passengers")}
+                        {transfer.maxPassengers}{" "}
+                        {t("transfer.fleet.passengers")}
                       </span>
                     </div>
                     <div className="flex items-center gap-2 text-gray-600">
@@ -343,18 +366,15 @@ export default function Transfer() {
                   </div>
 
                   {/* Price */}
-                  <div className="pt-4 border-t border-gray-100 flex items-center justify-between">
-                    <div>
-                      <span className="text-xs text-gray-400 block">
-                        {transfer.type === "hourly" ? t("transfer.pricePerHour") : t("transfer.pricePerTrip")}
-                      </span>
-                      <span className="text-xl font-bold text-primary-600">
-                        ฿{transfer.price.toLocaleString()}
-                      </span>
-                    </div>
-                    <button className="bg-gray-900 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-primary-600 transition-all duration-300 flex items-center gap-1.5 cursor-pointer">
-                      {t("transfer.bookNow")} <ArrowRight size={14} />
-                    </button>
+                  <div className="pt-4 border-t border-gray-100 flex items-baseline justify-between">
+                    <span className="text-xl font-bold text-primary-600">
+                      ฿{transfer.price.toLocaleString()}
+                    </span>
+                    <span className="text-xs text-gray-400">
+                      {transfer.type === "hourly"
+                        ? t("transfer.pricePerHour")
+                        : t("transfer.pricePerTrip")}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -366,9 +386,7 @@ export default function Transfer() {
             <h3 className="text-xl font-bold text-gray-800 mb-2">
               {t("transfer.empty.title")}
             </h3>
-            <p className="text-gray-500">
-              {t("transfer.empty.description")}
-            </p>
+            <p className="text-gray-500">{t("transfer.empty.description")}</p>
           </div>
         )}
 

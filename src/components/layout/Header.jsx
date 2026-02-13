@@ -1,14 +1,16 @@
 import { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import Container from "../ui/Container";
 import Button from "../ui/Button";
 import { useLanguage } from "../../context/LanguageContext";
 import "./Header.css";
 
-export default function Header({ setCurrentPage, forceSolid = false }) {
+export default function Header({ forceSolid = false }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [openDropdown, setOpenDropdown] = useState(null);
   const { language, toggleLanguage, t } = useLanguage();
+  const navigate = useNavigate();
 
   // Use solid style if scrolled OR forced (e.g. on detail pages)
   const isSolid = isScrolled || forceSolid;
@@ -46,22 +48,22 @@ export default function Header({ setCurrentPage, forceSolid = false }) {
   }, []);
 
   const navigation = [
-    { name: t('nav.home'), page: "home" },
+    { name: t('nav.home'), path: "/" },
     {
       name: t('nav.tourServices'),
       isDropdown: true,
       items: [
-        { name: t('nav.oneDayTrip'), page: "one-day-trip" },
-        { name: t('nav.packageTour'), page: "package-tour" },
+        { name: t('nav.oneDayTrip'), path: "/one-day-trip" },
+        { name: t('nav.packageTour'), path: "/package-tour" },
       ],
     },
-    { name: t('nav.transfer'), page: "transfer" },
-    { name: t('nav.hotel'), page: "hotel" },
-    { name: t('nav.about'), page: "about" },
+    { name: t('nav.transfer'), path: "/transfer" },
+    { name: t('nav.hotel'), path: "/hotel" },
+    { name: t('nav.about'), path: "/about" },
   ];
 
-  const handleNavClick = (page) => {
-    setCurrentPage(page);
+  const handleNavClick = (path) => {
+    navigate(path);
     setIsMenuOpen(false);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -78,8 +80,9 @@ export default function Header({ setCurrentPage, forceSolid = false }) {
         <div className="flex items-center justify-between">
           {/* Logo */}
           <div className="flex-shrink-0">
-            <button
-              onClick={() => handleNavClick("home")}
+            <Link
+              to="/"
+              onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
               className="flex items-center gap-2 group cursor-pointer"
             >
               <img
@@ -95,7 +98,7 @@ export default function Header({ setCurrentPage, forceSolid = false }) {
                   Travel & Tours
                 </span>
               </div>
-            </button>
+            </Link>
           </div>
 
           {/* Desktop Navigation */}
@@ -132,28 +135,30 @@ export default function Header({ setCurrentPage, forceSolid = false }) {
                   <div className={`absolute top-full left-0 pt-2 min-w-[180px] ${openDropdown === item.name ? 'visible' : 'invisible pointer-events-none'}`}>
                     <div className={`bg-white backdrop-blur-lg rounded-lg shadow-xl py-2 overflow-hidden transition-all duration-200 ${openDropdown === item.name ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2'}`}>
                       {item.items.map((subItem) => (
-                        <button
+                        <Link
                           key={subItem.name}
-                          onClick={() => handleNavClick(subItem.page)}
+                          to={subItem.path}
+                          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
                           className="block w-full text-left px-4 py-3 text-neutral-700 hover:bg-primary-100 hover:text-primary-700 transition-all duration-200 font-medium cursor-pointer"
                         >
                           {subItem.name}
-                        </button>
+                        </Link>
                       ))}
                     </div>
                   </div>
                 </div>
               ) : (
-                <button
+                <Link
                   key={item.name}
-                  onClick={() => handleNavClick(item.page)}
+                  to={item.path}
+                  onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
                   className={`transition-all duration-300 font-semibold cursor-pointer relative group py-2 ${
                     isSolid ? 'text-neutral-700 hover:text-primary-600' : 'text-white/90 hover:text-white'
                   }`}
                 >
                   {item.name}
                   <span className={`absolute bottom-0 left-0 w-0 h-0.5 transition-all duration-300 group-hover:w-full ${isSolid ? 'bg-primary-600' : 'bg-white'}`}></span>
-                </button>
+                </Link>
               )
             )}
           </nav>
@@ -243,7 +248,7 @@ export default function Header({ setCurrentPage, forceSolid = false }) {
                   {item.items.map((subItem) => (
                     <button
                       key={subItem.name}
-                      onClick={() => handleNavClick(subItem.page)}
+                      onClick={() => handleNavClick(subItem.path)}
                       className="text-xl font-semibold text-white hover:text-primary-400 transition-colors cursor-pointer"
                     >
                       {subItem.name}
@@ -253,7 +258,7 @@ export default function Header({ setCurrentPage, forceSolid = false }) {
               ) : (
                 <button
                   key={item.name}
-                  onClick={() => handleNavClick(item.page)}
+                  onClick={() => handleNavClick(item.path)}
                   className="text-2xl font-semibold text-white hover:text-primary-400 transition-colors cursor-pointer"
                 >
                   {item.name}

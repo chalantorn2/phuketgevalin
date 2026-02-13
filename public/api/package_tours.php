@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Package Tours API - Phuket Gevalin
  * CRUD operations for Package Tours
@@ -39,8 +40,24 @@ try {
             } else {
                 // List all package tours with optional filters
                 $category = $_GET['category'] ?? null;
+                $province = $_GET['province'] ?? null;
                 $limit = (int)($_GET['limit'] ?? 50);
                 $offset = (int)($_GET['offset'] ?? 0);
+
+                // Return distinct provinces for filter
+                if (isset($_GET['provinces'])) {
+                    $provSql = "SELECT DISTINCT location FROM package_tours WHERE location != '' AND location IS NOT NULL";
+                    if (!$showAll) {
+                        $provSql .= " AND status = 'active'";
+                    }
+                    $provSql .= " ORDER BY location ASC";
+                    $provinces = $db->fetchAll($provSql);
+                    $provinceKeys = array_map(function ($row) {
+                        return $row['location'];
+                    }, $provinces);
+                    successResponse(['provinces' => $provinceKeys]);
+                    break;
+                }
 
                 $sql = "SELECT * FROM package_tours";
                 $params = [];
@@ -53,6 +70,11 @@ try {
                 if ($category && $category !== 'all') {
                     $conditions[] = "category = ?";
                     $params[] = $category;
+                }
+
+                if ($province && $province !== 'all') {
+                    $conditions[] = "location = ?";
+                    $params[] = $province;
                 }
 
                 if (!empty($conditions)) {
@@ -180,14 +202,34 @@ try {
             $params = [];
 
             $allowedFields = [
-                'name_th', 'name_en', 'description_th', 'description_en',
-                'location', 'duration',
-                'price', 'discount_price',
-                'image', 'gallery', 'rating', 'reviews',
-                'highlights', 'itinerary', 'included', 'excluded',
-                'highlights_th', 'highlights_en', 'included_th', 'included_en', 'excluded_th', 'excluded_en',
-                'meeting_point_th', 'meeting_point_en', 'important_info_th', 'important_info_en',
-                'category', 'status'
+                'name_th',
+                'name_en',
+                'description_th',
+                'description_en',
+                'location',
+                'duration',
+                'price',
+                'discount_price',
+                'image',
+                'gallery',
+                'rating',
+                'reviews',
+                'highlights',
+                'itinerary',
+                'included',
+                'excluded',
+                'highlights_th',
+                'highlights_en',
+                'included_th',
+                'included_en',
+                'excluded_th',
+                'excluded_en',
+                'meeting_point_th',
+                'meeting_point_en',
+                'important_info_th',
+                'important_info_en',
+                'category',
+                'status'
             ];
 
             $jsonFields = ['gallery', 'itinerary', 'included', 'excluded', 'highlights_th', 'highlights_en', 'included_th', 'included_en', 'excluded_th', 'excluded_en'];

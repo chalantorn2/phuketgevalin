@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import Container from '../ui/Container';
 import { useLanguage } from '../../context/LanguageContext';
 
@@ -5,17 +6,17 @@ export default function Footer() {
   const { t } = useLanguage();
 
   const services = [
-    { name: t('nav.oneDayTrip'), href: '/one-day-trip' },
-    { name: t('nav.packageTour'), href: '/package-tour' },
-    { name: t('nav.transfer'), href: '/transfer' },
-    { name: t('nav.hotel'), href: '/hotel' },
+    { name: t('nav.oneDayTrip'), to: '/one-day-trip' },
+    { name: t('nav.packageTour'), to: '/package-tour' },
+    { name: t('nav.transfer'), to: '/transfer' },
+    { name: t('nav.hotel'), to: '/hotel' },
   ];
 
   const company = [
-    { name: t('footer.aboutUs'), href: '/about' },
-    { name: t('footer.contactUs'), href: '/contact' },
-    { name: t('footer.privacy'), href: '/privacy' },
-    { name: t('footer.terms'), href: '/terms' },
+    { name: t('footer.aboutUs'), to: '/about' },
+    { name: t('footer.contactUs'), to: '/contact' },
+    { name: t('footer.privacy'), to: '/privacy' },
+    { name: t('footer.terms'), to: '/terms' },
   ];
 
   return (
@@ -69,12 +70,12 @@ export default function Footer() {
             <ul className="space-y-2">
               {services.map((item) => (
                 <li key={item.name}>
-                  <a
-                    href={item.href}
+                  <Link
+                    to={item.to}
                     className="text-neutral-400 hover:text-accent-400 transition-colors cursor-pointer"
                   >
                     {item.name}
-                  </a>
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -86,12 +87,12 @@ export default function Footer() {
             <ul className="space-y-2">
               {company.map((item) => (
                 <li key={item.name}>
-                  <a
-                    href={item.href}
+                  <Link
+                    to={item.to}
                     className="text-neutral-400 hover:text-accent-400 transition-colors cursor-pointer"
                   >
                     {item.name}
-                  </a>
+                  </Link>
                 </li>
               ))}
             </ul>

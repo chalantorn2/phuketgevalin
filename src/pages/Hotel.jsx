@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   MapPin,
   Star,
   Check,
-  Calendar,
   DollarSign,
   Search,
   Filter,
@@ -12,7 +12,8 @@ import {
 import { useLanguage } from "../context/LanguageContext";
 import { hotelsAPI } from "../services/api";
 
-export default function Hotel({ onViewDetail }) {
+export default function Hotel() {
+  const navigate = useNavigate();
   const { t, language } = useLanguage();
 
   // Data State
@@ -23,8 +24,6 @@ export default function Hotel({ onViewDetail }) {
   const [activeLocation, setActiveLocation] = useState("all");
   const [selectedStar, setSelectedStar] = useState(null);
   const [maxPrice, setMaxPrice] = useState(30000);
-  const [checkInDate, setCheckInDate] = useState("");
-  const [checkOutDate, setCheckOutDate] = useState("");
 
   // Fetch hotels from API
   useEffect(() => {
@@ -79,8 +78,6 @@ export default function Hotel({ onViewDetail }) {
     setActiveLocation("all");
     setSelectedStar(null);
     setMaxPrice(30000);
-    setCheckInDate("");
-    setCheckOutDate("");
   };
 
   return (
@@ -89,7 +86,7 @@ export default function Hotel({ onViewDetail }) {
       <div className="relative bg-primary-900 h-[400px] mb-8 overflow-hidden">
         <div className="absolute inset-0">
           <img
-            src="https://images.unsplash.com/photo-1571896349842-68c8949139f1?q=80&w=2000&auto=format&fit=crop"
+            src="/image/hotels.jpg"
             alt="Hotel Header"
             className="w-full h-full object-cover opacity-60"
           />
@@ -124,38 +121,6 @@ export default function Hotel({ onViewDetail }) {
                 >
                   <RotateCcw size={12} /> {t("hotel.filter.reset")}
                 </button>
-              </div>
-
-              {/* Date Filter */}
-              <div className="mb-8">
-                <h4 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2">
-                  <Calendar size={16} className="text-primary-500" />{" "}
-                  {t("hotel.filter.date.title")}
-                </h4>
-                <div className="space-y-3">
-                  <div className="space-y-1">
-                    <label className="text-xs text-gray-500 ml-1">
-                      {t("hotel.filter.date.checkIn")}
-                    </label>
-                    <input
-                      type="date"
-                      value={checkInDate}
-                      onChange={(e) => setCheckInDate(e.target.value)}
-                      className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-700 focus:ring-2 focus:ring-primary-200 focus:border-primary-500 outline-none transition-all"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-xs text-gray-500 ml-1">
-                      {t("hotel.filter.date.checkOut")}
-                    </label>
-                    <input
-                      type="date"
-                      value={checkOutDate}
-                      onChange={(e) => setCheckOutDate(e.target.value)}
-                      className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-700 focus:ring-2 focus:ring-primary-200 focus:border-primary-500 outline-none transition-all"
-                    />
-                  </div>
-                </div>
               </div>
 
               {/* Price Filter */}
@@ -291,7 +256,7 @@ export default function Hotel({ onViewDetail }) {
                 {filteredHotels.map((hotel) => (
                   <div
                     key={hotel.id}
-                    onClick={() => onViewDetail && onViewDetail(hotel.id)}
+                    onClick={() => navigate(`/hotel/${hotel.id}`)}
                     className="group bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl hover:shadow-primary-500/10 transition-all duration-500 flex flex-col h-full hover:-translate-y-1 cursor-pointer"
                   >
                     {/* Image */}

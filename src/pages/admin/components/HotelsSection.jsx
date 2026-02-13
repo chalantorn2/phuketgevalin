@@ -939,18 +939,37 @@ function HotelForm({ hotel, onClose, onSave }) {
   ];
 
   const locationOptions = [
-    { value: 'Patong', label: 'Patong / pa tong' },
-    { value: 'Karon', label: 'Karon / ka ron' },
-    { value: 'Kata', label: 'Kata / ka ta' },
-    { value: 'Phuket Town', label: 'Phuket Town' },
-    { value: 'Kamala', label: 'Kamala / ka ma la' },
-    { value: 'Surin', label: 'Surin' },
-    { value: 'Bang Tao', label: 'Bang Tao' },
-    { value: 'Mai Khao', label: 'Mai Khao' },
-    { value: 'Rawai', label: 'Rawai' },
-    { value: 'Nai Harn', label: 'Nai Harn' },
-    { value: 'Cape Panwa', label: 'Cape Panwa' },
+    // Phuket
+    { value: 'Phuket', label: 'Phuket / ภูเก็ต' },
+    { value: 'Patong', label: 'Patong / ป่าตอง' },
+    { value: 'Karon', label: 'Karon / กะรน' },
+    { value: 'Kata', label: 'Kata / กะตะ' },
+    { value: 'Phuket Town', label: 'Phuket Town / เมืองภูเก็ต' },
+    { value: 'Kamala', label: 'Kamala / กมลา' },
+    { value: 'Surin', label: 'Surin / สุรินทร์' },
+    { value: 'Bang Tao', label: 'Bang Tao / บางเทา' },
+    { value: 'Mai Khao', label: 'Mai Khao / ไม้ขาว' },
+    { value: 'Rawai', label: 'Rawai / ราไวย์' },
+    { value: 'Nai Harn', label: 'Nai Harn / ในหาน' },
+    { value: 'Cape Panwa', label: 'Cape Panwa / แหลมพันวา' },
+    // Other provinces
+    { value: 'Krabi', label: 'Krabi / กระบี่' },
+    { value: 'Koh Samui', label: 'Koh Samui / เกาะสมุย' },
+    { value: 'Pattaya', label: 'Pattaya / พัทยา' },
+    { value: 'Bangkok', label: 'Bangkok / กรุงเทพฯ' },
+    { value: 'Chiang Mai', label: 'Chiang Mai / เชียงใหม่' },
+    { value: 'Hua Hin', label: 'Hua Hin / หัวหิน' },
+    { value: 'Koh Phi Phi', label: 'Koh Phi Phi / เกาะพีพี' },
+    { value: 'Koh Lanta', label: 'Koh Lanta / เกาะลันตา' },
+    { value: 'Khao Lak', label: 'Khao Lak / เขาหลัก' },
   ];
+
+  // If hotel has a location not in the list, add it dynamically
+  const currentLocation = formData.location;
+  const hasCurrentLocation = !currentLocation || locationOptions.some(opt => opt.value === currentLocation);
+  if (!hasCurrentLocation) {
+    locationOptions.push({ value: currentLocation, label: currentLocation });
+  }
 
   const handleImagesUpload = async (e) => {
     const files = Array.from(e.target.files);

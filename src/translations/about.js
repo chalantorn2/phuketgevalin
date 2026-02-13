@@ -4,7 +4,7 @@ export const about = {
     hero: {
       badge: "Phuket Gevalin Tour",
       title: "เกี่ยวกับเรา",
-      subtitle: "ผู้ให้บริการด้านการท่องเที่ยวครบวงจรที่ภูเก็ต",
+      subtitle: "ผู้ให้บริการด้านการท่องเที่ยวครบวงจร",
       description: "พร้อมมอบประสบการณ์ที่น่าประทับใจในทุกการเดินทาง",
     },
     company: {
@@ -93,8 +93,7 @@ export const about = {
       badge: "Phuket Gevalin Tour",
       title: "About Us",
       subtitle: "Your Complete Travel Service Provider in Phuket",
-      description:
-        "Delivering memorable experiences for every journey",
+      description: "Delivering memorable experiences for every journey",
     },
     company: {
       badge: "Our Story",

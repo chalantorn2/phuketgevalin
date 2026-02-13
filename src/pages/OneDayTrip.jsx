@@ -1,40 +1,38 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { MapPin, Clock, Star, Heart, Map, Loader2 } from "lucide-react";
 import { useLanguage } from "../context/LanguageContext";
 import { onedayTripsAPI } from "../services/api";
 
-export default function OneDayTrip({ onViewDetail }) {
+export default function OneDayTrip() {
+  const navigate = useNavigate();
   const { t, language } = useLanguage();
   const [activeProvince, setActiveProvince] = useState("all");
   const [trips, setTrips] = useState([]);
+  const [provinceKeys, setProvinceKeys] = useState(["all"]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Province keys for filter
-  const provinceKeys = [
-    "all",
-    "phuket",
-    "krabi",
-    "phangnga",
-    "suratthani",
-    "ayutthaya",
-    "bangkok",
-  ];
-
-  // Fetch trips from API
+  // Fetch trips and provinces from API
   useEffect(() => {
-    fetchTrips();
+    fetchData();
   }, []);
 
-  const fetchTrips = async () => {
+  const fetchData = async () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await onedayTripsAPI.getAll(false);
-      if (response.success) {
-        setTrips(response.data || []);
+      const [tripsRes, provRes] = await Promise.all([
+        onedayTripsAPI.getAll(false),
+        onedayTripsAPI.getProvinces(),
+      ]);
+      if (tripsRes.success) {
+        setTrips(tripsRes.data || []);
       } else {
-        setError(response.message || "Failed to fetch trips");
+        setError(tripsRes.message || "Failed to fetch trips");
+      }
+      if (provRes.success && provRes.data?.provinces) {
+        setProvinceKeys(["all", ...provRes.data.provinces]);
       }
     } catch (err) {
       console.error("Failed to fetch trips:", err);
@@ -75,7 +73,7 @@ export default function OneDayTrip({ onViewDetail }) {
       <div className="relative bg-primary-900 h-[450px] mb-12 overflow-hidden">
         <div className="absolute inset-0">
           <img
-            src="https://images.unsplash.com/photo-1500916434205-0c77489c6cf7?q=80&w=2000&auto=format&fit=crop"
+            src="/image/onedaytrip.jpg"
             alt="Header"
             className="w-full h-full object-cover opacity-60"
           />
@@ -115,7 +113,7 @@ export default function OneDayTrip({ onViewDetail }) {
                     : "bg-transparent text-gray-600 hover:bg-gray-100"
                 }`}
               >
-                {t(`oneDayTrip.provinces.${key}`)}
+                {t(`oneDayTrip.provinces.${key}`) || key}
               </button>
             ))}
           </div>
@@ -154,7 +152,7 @@ export default function OneDayTrip({ onViewDetail }) {
             {localizedTrips.map((trip) => (
               <div
                 key={trip.id}
-                onClick={() => onViewDetail && onViewDetail(trip.id)}
+                onClick={() => navigate(`/one-day-trip/${trip.id}`)}
                 className="group bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl hover:shadow-primary-500/10 transition-all duration-500 relative flex flex-col h-full hover:-translate-y-1 cursor-pointer"
               >
                 {/* Image */}
@@ -239,7 +237,7 @@ export default function OneDayTrip({ onViewDetail }) {
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        onViewDetail && onViewDetail(trip.id);
+                        navigate(`/one-day-trip/${trip.id}`);
                       }}
                       className="px-4 py-2 rounded-xl bg-primary-50 text-primary-600 text-sm font-bold hover:bg-primary-500 hover:text-white transition-all cursor-pointer"
                     >

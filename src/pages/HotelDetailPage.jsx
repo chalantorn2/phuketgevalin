@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import {
   MapPin,
   Star,
@@ -37,7 +38,9 @@ const amenityIcons = {
   spa: <Wind size={18} />,
 };
 
-export default function HotelDetailPage({ hotelId, onBack }) {
+export default function HotelDetailPage() {
+  const { id: hotelId } = useParams();
+  const navigate = useNavigate();
   const { t, language } = useLanguage();
   const [hotel, setHotel] = useState(null);
   const [roomTypes, setRoomTypes] = useState([]);
@@ -241,7 +244,7 @@ export default function HotelDetailPage({ hotelId, onBack }) {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <p className="text-gray-500 mb-4">{language === 'TH' ? 'ไม่พบข้อมูลโรงแรม' : 'Hotel not found'}</p>
-          <button onClick={onBack} className="text-primary-500 hover:underline cursor-pointer">
+          <button onClick={() => navigate("/hotel")} className="text-primary-500 hover:underline cursor-pointer">
             {language === 'TH' ? 'กลับไปหน้าค้นหา' : 'Back to search'}
           </button>
         </div>
@@ -299,7 +302,7 @@ export default function HotelDetailPage({ hotelId, onBack }) {
       {/* Navigation Breadcrumb */}
       <div className="container mx-auto px-6 py-4">
         <button
-          onClick={onBack}
+          onClick={() => navigate("/hotel")}
           className="flex items-center gap-2 text-gray-500 hover:text-primary-600 transition-colors font-medium cursor-pointer"
         >
           <ChevronLeft size={20} /> {language === 'TH' ? 'ย้อนกลับไปหน้าค้นหาที่พัก' : 'Back to search'}

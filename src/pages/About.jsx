@@ -38,26 +38,17 @@ export default function About() {
 
       {/* Company Info Section */}
       <div className="container mx-auto px-6 py-6">
-        <div className="grid md:grid-cols-2 gap-12 items-center mb-16">
-          <div>
-            <span className="text-primary-500 font-bold tracking-[0.15em] uppercase text-xs mb-4 block">
-              {t("about.company.badge")}
-            </span>
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
-              {t("about.company.title")}
-            </h2>
-            <div className="space-y-4 text-base text-gray-600 leading-relaxed">
-              <p>{t("about.company.description1")}</p>
-              <p>{t("about.company.description2")}</p>
-              <p>{t("about.company.description3")}</p>
-            </div>
-          </div>
-          <div className="relative rounded-2xl overflow-hidden shadow-lg">
-            <img
-              src="https://images.unsplash.com/photo-1552566626-52f8b828add9?q=80&w=1000&auto=format&fit=crop"
-              alt="Our Team"
-              className="w-full aspect-[4/3] object-cover"
-            />
+        <div className="max-w-4xl mx-auto mb-16 text-center">
+          <span className="text-primary-500 font-bold tracking-[0.15em] uppercase text-xs mb-4 block">
+            {t("about.company.badge")}
+          </span>
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
+            {t("about.company.title")}
+          </h2>
+          <div className="space-y-4 text-base text-gray-600 leading-relaxed">
+            <p>{t("about.company.description1")}</p>
+            <p>{t("about.company.description2")}</p>
+            <p>{t("about.company.description3")}</p>
           </div>
         </div>
 

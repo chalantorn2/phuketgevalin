@@ -54,6 +54,7 @@ export const packageToursAPI = {
     }
     return fetchAPI(`package_tours${query}`);
   },
+  getProvinces: () => fetchAPI('package_tours?provinces=true'),
   getById: (id) => fetchAPI(`package_tours?id=${id}`),
   create: (data) => fetchAPI('package_tours', {
     method: 'POST',
@@ -278,6 +279,7 @@ export const onedayTripsAPI = {
     }
     return fetchAPI(`oneday_trips${query}`);
   },
+  getProvinces: () => fetchAPI('oneday_trips?provinces=true'),
   getById: (id) => fetchAPI(`oneday_trips?id=${id}`),
   create: (data) => fetchAPI('oneday_trips', {
     method: 'POST',

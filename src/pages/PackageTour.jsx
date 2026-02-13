@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   MapPin,
   Clock,
@@ -16,11 +17,13 @@ import {
 import { useLanguage } from "../context/LanguageContext";
 import { packageToursAPI } from "../services/api";
 
-export default function PackageTour({ onViewDetail }) {
+export default function PackageTour() {
+  const navigate = useNavigate();
   const { t, language } = useLanguage();
 
   // Data State
   const [tours, setTours] = useState([]);
+  const [provinceKeys, setProvinceKeys] = useState(["all"]);
   const [loading, setLoading] = useState(true);
 
   // Filter States
@@ -28,14 +31,20 @@ export default function PackageTour({ onViewDetail }) {
   const [activeDuration, setActiveDuration] = useState("all");
   const [maxPrice, setMaxPrice] = useState(100000);
 
-  // Fetch package tours from API
+  // Fetch package tours and provinces from API
   useEffect(() => {
-    const fetchPackageTours = async () => {
+    const fetchData = async () => {
       setLoading(true);
       try {
-        const data = await packageToursAPI.getAll();
-        if (data.success) {
-          setTours(data.data?.package_tours || []);
+        const [toursRes, provRes] = await Promise.all([
+          packageToursAPI.getAll(),
+          packageToursAPI.getProvinces(),
+        ]);
+        if (toursRes.success) {
+          setTours(toursRes.data?.package_tours || []);
+        }
+        if (provRes.success && provRes.data?.provinces) {
+          setProvinceKeys(["all", ...provRes.data.provinces]);
         }
       } catch (error) {
         console.error("Failed to fetch package tours:", error);
@@ -43,7 +52,7 @@ export default function PackageTour({ onViewDetail }) {
         setLoading(false);
       }
     };
-    fetchPackageTours();
+    fetchData();
   }, []);
 
   // Helper function with fallback
@@ -56,50 +65,46 @@ export default function PackageTour({ onViewDetail }) {
     const highlights = tour.highlights ? tour.highlights.split(",").map(h => h.trim()) : [];
     const duration = tour.duration || "";
 
-    // Determine zone from includes/highlights
-    let zone = "asia";
-    const text = ((tour.name_en || "") + (tour.description_en || "")).toLowerCase();
-    if (text.includes("europe") || text.includes("italy") || text.includes("france") || text.includes("swiss")) {
-      zone = "europe";
-    } else if (text.includes("thailand") || text.includes("chiangmai") || text.includes("phuket")) {
-      zone = "thailand";
-    }
+    // Determine duration category from DB value
+    const knownDurations = ["2 วัน 1 คืน", "3 วัน 2 คืน", "4 วัน 3 คืน"];
+    const durationKey = knownDurations.includes(duration) ? duration : (duration ? "more" : "");
 
-    // Determine duration category
-    let durationKey = "medium";
-    if (duration.includes("3") || duration.includes("4")) {
-      durationKey = "short";
-    } else if (duration.includes("7") || duration.includes("8") || duration.includes("9") || duration.includes("10")) {
-      durationKey = "long";
-    }
+    // Use location directly from DB
+    const locationKey = tour.location || "";
+    const provinceName = locationKey;
 
     return {
       ...tour,
       name: getLocalizedText(tour.name_th, tour.name_en),
       description: getLocalizedText(tour.description_th, tour.description_en),
       price: Number(tour.price),
-      discountPrice: Math.round(Number(tour.price) * 1.2),
+      discountPrice: tour.discount_price ? Number(tour.discount_price) : Math.round(Number(tour.price) * 1.2),
       highlights,
       duration,
       durationKey,
-      zone,
-      rating: 4.5 + Math.random() * 0.4,
-      reviews: Math.floor(Math.random() * 300) + 50,
+      locationKey,
+      provinceName,
+      rating: Number(tour.rating) || 4.5,
+      reviews: Number(tour.reviews) || 0,
     };
   };
 
-  // Filter categories from tours
-  const categoryKeys = ["all", "asia", "europe", "thailand"];
-  const durationKeys = ["all", "short", "medium", "long"];
+  const durationOptions = [
+    { key: "all", label: t("packageTour.durations.all") },
+    { key: "2 วัน 1 คืน", label: "2 วัน 1 คืน" },
+    { key: "3 วัน 2 คืน", label: "3 วัน 2 คืน" },
+    { key: "4 วัน 3 คืน", label: "4 วัน 3 คืน" },
+    { key: "more", label: t("packageTour.durations.more") },
+  ];
 
   // Filter Logic
   const filteredTours = tours
     .map(getLocalizedTour)
     .filter((pkg) => {
-      const matchCategory = activeCategory === "all" || pkg.zone === activeCategory;
+      const matchProvince = activeCategory === "all" || pkg.locationKey === activeCategory;
       const matchDuration = activeDuration === "all" || pkg.durationKey === activeDuration;
       const matchPrice = pkg.price <= maxPrice;
-      return matchCategory && matchDuration && matchPrice;
+      return matchProvince && matchDuration && matchPrice;
     });
 
   const resetFilters = () => {
@@ -114,7 +119,7 @@ export default function PackageTour({ onViewDetail }) {
       <div className="relative bg-primary-900 h-[400px] mb-8 overflow-hidden">
         <div className="absolute inset-0">
           <img
-            src="https://images.unsplash.com/photo-1436491865332-7a61a109cc05?q=80&w=2000&auto=format&fit=crop"
+            src="/image/packagestour.jpg"
             alt="Package Tour Header"
             className="w-full h-full object-cover opacity-60"
           />
@@ -151,14 +156,14 @@ export default function PackageTour({ onViewDetail }) {
                 </button>
               </div>
 
-              {/* Zone Filter */}
+              {/* Province Filter */}
               <div className="mb-8">
                 <h4 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2">
                   <Globe size={16} className="text-primary-500" />{" "}
                   {t("packageTour.filter.zone.title")}
                 </h4>
-                <div className="space-y-2">
-                  {categoryKeys.map((key) => (
+                <div className="space-y-2 max-h-64 overflow-y-auto">
+                  {provinceKeys.map((key) => (
                     <label
                       key={key}
                       className={`flex items-center gap-3 cursor-pointer group p-2 rounded-lg transition-all ${
@@ -178,7 +183,7 @@ export default function PackageTour({ onViewDetail }) {
                       </div>
                       <input
                         type="radio"
-                        name="zone"
+                        name="province"
                         className="hidden"
                         checked={activeCategory === key}
                         onChange={() => setActiveCategory(key)}
@@ -190,7 +195,7 @@ export default function PackageTour({ onViewDetail }) {
                             : "text-gray-600"
                         }`}
                       >
-                        {t(`packageTour.zones.${key}`)}
+                        {key === "all" ? t("packageTour.provinces.all") : key}
                       </span>
                     </label>
                   ))}
@@ -204,17 +209,17 @@ export default function PackageTour({ onViewDetail }) {
                   {t("packageTour.filter.duration.title")}
                 </h4>
                 <div className="flex flex-wrap gap-2">
-                  {durationKeys.map((key) => (
+                  {durationOptions.map((opt) => (
                     <button
-                      key={key}
-                      onClick={() => setActiveDuration(key)}
+                      key={opt.key}
+                      onClick={() => setActiveDuration(opt.key)}
                       className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all cursor-pointer ${
-                        activeDuration === key
+                        activeDuration === opt.key
                           ? "bg-primary-500 text-white border-primary-500"
                           : "bg-white text-gray-600 border-gray-200 hover:border-primary-300"
                       }`}
                     >
-                      {t(`packageTour.durations.${key}`)}
+                      {opt.label}
                     </button>
                   ))}
                 </div>
@@ -270,7 +275,7 @@ export default function PackageTour({ onViewDetail }) {
                 {filteredTours.map((pkg) => (
                   <div
                     key={pkg.id}
-                    onClick={() => onViewDetail && onViewDetail(pkg.id)}
+                    onClick={() => navigate(`/package-tour/${pkg.id}`)}
                     className="group bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-lg hover:shadow-2xl hover:shadow-primary-100/50 transition-all duration-500 flex flex-col cursor-pointer"
                   >
                     {/* Image Section (Top) */}
@@ -284,7 +289,7 @@ export default function PackageTour({ onViewDetail }) {
 
                       <div className="absolute top-3 left-3">
                         <span className="bg-white/90 backdrop-blur text-primary-800 text-xs font-bold px-2.5 py-1 rounded-full shadow-sm flex items-center gap-1">
-                          <MapPin size={11} /> {t(`packageTour.zones.${pkg.zone}`)}
+                          <MapPin size={11} /> {pkg.provinceName}
                         </span>
                       </div>
                       <div className="absolute top-3 right-3">
@@ -298,7 +303,7 @@ export default function PackageTour({ onViewDetail }) {
                     <div className="p-5 flex flex-col flex-1">
                       <div className="mb-2">
                         <span className="text-primary-600 text-[10px] font-bold tracking-wider uppercase bg-primary-50 px-2 py-0.5 rounded">
-                          {t(`packageTour.zones.${pkg.zone}`)}
+                          {pkg.provinceName}
                         </span>
                       </div>
 
@@ -365,7 +370,7 @@ export default function PackageTour({ onViewDetail }) {
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            onViewDetail && onViewDetail(pkg.id);
+                            navigate(`/package-tour/${pkg.id}`);
                           }}
                           className="bg-gray-900 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-primary-600 transition-all duration-300 flex items-center gap-1.5 cursor-pointer"
                         >
