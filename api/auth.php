@@ -19,7 +19,8 @@ try {
                 successResponse([
                     'logged_in' => true,
                     'admin_id' => $_SESSION['admin_id'],
-                    'username' => $_SESSION['admin_username']
+                    'username' => $_SESSION['admin_username'],
+                    'role' => $_SESSION['admin_role'] ?? 'admin'
                 ]);
             } else {
                 successResponse(['logged_in' => false]);

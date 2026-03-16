@@ -1,4 +1,5 @@
 <?php
+
 /**
  * API Router - Phuket Gevalin
  */
@@ -91,6 +92,10 @@ switch ($path) {
 
     case 'upload':
         require_once __DIR__ . '/upload.php';
+        break;
+
+    case 'users':
+        require_once __DIR__ . '/users.php';
         break;
 
     default:

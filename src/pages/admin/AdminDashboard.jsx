@@ -9,6 +9,7 @@ import {
   TransfersSection,
   PromotionsSection,
   OneDayTripsSection,
+  UsersSection,
 } from "./components";
 
 export default function AdminDashboard({ admin, onLogout }) {
@@ -55,9 +56,18 @@ export default function AdminDashboard({ admin, onLogout }) {
       id: "bookings",
       name: "Bookings",
       icon: "M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z",
-      disabled: true,
+    },
+    {
+      id: "users",
+      name: "User Management",
+      icon: "M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z",
+      superAdminOnly: true,
     },
   ];
+
+  const visibleMenuItems = menuItems.filter(
+    (item) => !item.superAdminOnly || admin?.role === "super_admin",
+  );
 
   return (
     <div className="min-h-screen bg-gray-100 flex">
@@ -87,7 +97,7 @@ export default function AdminDashboard({ admin, onLogout }) {
         {/* Menu - Scrollable */}
         <nav className="flex-1 p-4 overflow-y-auto">
           <ul className="space-y-2">
-            {menuItems.map((item) => (
+            {visibleMenuItems.map((item) => (
               <li key={item.id}>
                 <button
                   onClick={() => !item.disabled && setCurrentSection(item.id)}
@@ -169,6 +179,7 @@ export default function AdminDashboard({ admin, onLogout }) {
           {currentSection === "transfers" && <TransfersSection />}
           {currentSection === "hotels" && <HotelsSection />}
           {currentSection === "bookings" && <BookingsSection />}
+          {currentSection === "users" && <UsersSection />}
         </main>
       </div>
     </div>

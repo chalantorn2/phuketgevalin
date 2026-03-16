@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
-import AdminLogin from './AdminLogin';
-import AdminDashboard from './AdminDashboard';
-import { authAPI } from '../../services/api';
+import { useState, useEffect } from "react";
+import AdminLogin from "./AdminLogin";
+import AdminDashboard from "./AdminDashboard";
+import { authAPI } from "../../services/api";
 
 export default function AdminApp() {
   const [admin, setAdmin] = useState(null);
@@ -17,11 +17,12 @@ export default function AdminApp() {
       if (response.success && response.data.logged_in) {
         setAdmin({
           id: response.data.admin_id,
-          username: response.data.username
+          username: response.data.username,
+          role: response.data.role,
         });
       }
     } catch (error) {
-      console.error('Auth check failed:', error);
+      console.error("Auth check failed:", error);
     } finally {
       setLoading(false);
     }
