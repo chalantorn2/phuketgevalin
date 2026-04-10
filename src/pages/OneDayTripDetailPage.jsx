@@ -17,6 +17,7 @@ import {
   Loader2,
 } from "lucide-react";
 import Button from "../components/ui/Button";
+import BookingModal from "../components/BookingModal";
 import { useLanguage } from "../context/LanguageContext";
 import { onedayTripsAPI } from "../services/api";
 
@@ -29,6 +30,7 @@ export default function TourDetailPage() {
   const [tourData, setTourData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showBooking, setShowBooking] = useState(false);
 
   // Fetch tour data from API
   useEffect(() => {
@@ -487,16 +489,29 @@ export default function TourDetailPage() {
                 </span>
               </div>
 
-              <Button className="w-full !py-3.5 !text-base shadow-lg shadow-primary-500/30 mb-3">
+              <Button
+                className="w-full !py-3.5 !text-base shadow-lg shadow-primary-500/30 mb-3"
+                onClick={() => setShowBooking(true)}
+              >
                 {language === "TH" ? "จองทันที" : "Book Now"}
               </Button>
-              <button className="w-full py-3 text-sm font-bold text-gray-500 hover:text-primary-600 transition-colors bg-transparent border border-gray-200 rounded-xl hover:border-primary-200 cursor-pointer">
-                {language === "TH" ? "ขั้นตอนการจอง" : "Booking Steps"}
-              </button>
             </div>
           </div>
         </div>
       </div>
+
+      <BookingModal
+        isOpen={showBooking}
+        onClose={() => setShowBooking(false)}
+        serviceType="tour"
+        serviceId={tourData.id}
+        serviceName={title}
+        serviceImage={images[0]}
+        initialDate={selectedDate}
+        initialAdults={guests}
+        pricePerUnit={Number(tourData.price)}
+        priceLabel={language === "TH" ? "ต่อท่าน" : "per person"}
+      />
     </div>
   );
 }

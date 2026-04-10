@@ -24,6 +24,7 @@ import {
   X,
 } from "lucide-react";
 import Button from "../components/ui/Button";
+import BookingModal from "../components/BookingModal";
 import { useLanguage } from "../context/LanguageContext";
 import { hotelsAPI, hotelRoomTypesAPI, hotelPeriodsAPI, hotelRoomPricesAPI } from "../services/api";
 
@@ -52,6 +53,7 @@ export default function HotelDetailPage() {
   const [checkOutDate, setCheckOutDate] = useState('');
   const [showGallery, setShowGallery] = useState(false);
   const [galleryIndex, setGalleryIndex] = useState(0);
+  const [showBooking, setShowBooking] = useState(false);
 
   // Fetch all data
   useEffect(() => {
@@ -694,6 +696,7 @@ export default function HotelDetailPage() {
               <Button
                 className="w-full !py-3.5 shadow-lg shadow-primary-500/30 mb-3"
                 disabled={!checkInDate || !checkOutDate || nights <= 0}
+                onClick={() => setShowBooking(true)}
               >
                 {language === 'TH' ? 'จองที่พัก' : 'Book Now'}
               </Button>
@@ -704,6 +707,21 @@ export default function HotelDetailPage() {
           </div>
         </div>
       </div>
+
+      <BookingModal
+        isOpen={showBooking}
+        onClose={() => setShowBooking(false)}
+        serviceType="hotel"
+        serviceId={hotel.id}
+        serviceName={hotelName}
+        serviceImage={gallery[0]}
+        initialDate={checkInDate}
+        initialCheckout={checkOutDate}
+        pricePerUnit={pricePerNight}
+        priceLabel={language === 'TH' ? 'ต่อคืน' : 'per night'}
+        roomName={selectedRoom ? (language === 'TH' ? selectedRoom.name_th || selectedRoom.name_en : selectedRoom.name_en || selectedRoom.name_th) : ''}
+        nights={nights}
+      />
     </div>
   );
 }

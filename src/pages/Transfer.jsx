@@ -15,6 +15,7 @@ import {
   Crown,
 } from "lucide-react";
 import { useLanguage } from "../context/LanguageContext";
+import BookingModal from "../components/BookingModal";
 import {
   transfersAPI,
   transferLocationsAPI,
@@ -27,6 +28,8 @@ export default function Transfer() {
   const [from, setFrom] = useState(0);
   const [to, setTo] = useState(0);
   const [routePrice, setRoutePrice] = useState(null);
+  const [showBooking, setShowBooking] = useState(false);
+  const [transferDate, setTransferDate] = useState("");
 
   // Data from API
   const [transfers, setTransfers] = useState([]);
@@ -211,6 +214,9 @@ export default function Transfer() {
                 <Calendar size={18} className="text-gray-400" />
                 <input
                   type="date"
+                  value={transferDate}
+                  onChange={(e) => setTransferDate(e.target.value)}
+                  min={new Date().toISOString().split("T")[0]}
                   className="bg-transparent outline-none text-gray-600 text-sm w-full"
                 />
               </div>
@@ -253,7 +259,10 @@ export default function Transfer() {
                     </p>
                   )}
                 </div>
-                <button className="bg-primary-600 text-white px-8 py-3 rounded-lg font-bold shadow-lg shadow-primary-500/30 hover:bg-primary-700 hover:scale-105 transition-all duration-300 flex items-center gap-2 cursor-pointer">
+                <button
+                  onClick={() => setShowBooking(true)}
+                  className="bg-primary-600 text-white px-8 py-3 rounded-lg font-bold shadow-lg shadow-primary-500/30 hover:bg-primary-700 hover:scale-105 transition-all duration-300 flex items-center gap-2 cursor-pointer"
+                >
                   {t("transfer.booking.bookButton")} <ArrowRight size={18} />
                 </button>
               </div>
@@ -433,6 +442,27 @@ export default function Transfer() {
           </div>
         </div>
       </div>
+
+      <BookingModal
+        isOpen={showBooking}
+        onClose={() => setShowBooking(false)}
+        serviceType="transfer"
+        serviceId={routePrice?.id || 0}
+        serviceName={language === "TH" ? "บริการรถรับส่ง" : "Transfer Service"}
+        initialDate={transferDate}
+        pricePerUnit={routePrice ? Number(routePrice.price) : 0}
+        priceLabel={language === "TH" ? "ต่อเที่ยว" : "per trip"}
+        pickupLocation={
+          locations.find((l) => l.id === from)
+            ? getLocationName(locations.find((l) => l.id === from))
+            : ""
+        }
+        dropoffLocation={
+          locations.find((l) => l.id === to)
+            ? getLocationName(locations.find((l) => l.id === to))
+            : ""
+        }
+      />
     </div>
   );
 }

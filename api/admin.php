@@ -56,6 +56,7 @@ try {
             $recentBookings = $db->fetchAll(
                 "SELECT b.*,
                  CASE
+                    WHEN b.service_type = 'tour' THEN (SELECT title_en FROM oneday_trips WHERE id = b.service_id)
                     WHEN b.service_type = 'package_tour' THEN (SELECT name_en FROM package_tours WHERE id = b.service_id)
                     WHEN b.service_type = 'hotel' THEN (SELECT name_en FROM hotels WHERE id = b.service_id)
                     WHEN b.service_type = 'transfer' THEN (SELECT name_en FROM transfers WHERE id = b.service_id)
